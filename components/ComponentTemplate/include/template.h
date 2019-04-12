@@ -1,0 +1,15 @@
+/*
+ * template.h
+ *
+ *  Created on: Nov 9, 2018
+ *      Author: carbon
+ */
+
+#ifndef COMPONENTS_COMPONENTTEMPLATE_INCLUDE_TEMPLATE_H_
+#define COMPONENTS_COMPONENTTEMPLATE_INCLUDE_TEMPLATE_H_
+
+
+
+
+
+#endif /* COMPONENTS_COMPONENTTEMPLATE_INCLUDE_TEMPLATE_H_ */
