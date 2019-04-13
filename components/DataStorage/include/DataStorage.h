@@ -13,6 +13,8 @@ extern RemoteDebug Debug;
 
 namespace DataStorage {
 
+	bool m_started = false;
+
 	// name for ESP_LOG
 	const char *m_TAG = "DataStorage";
 
@@ -29,6 +31,8 @@ namespace DataStorage {
 
     	SDCard::begin();
     	SPIFFSHAL::begin();
+
+		m_started = true;
     }
 
     void setFlightName(const char *flightName) {
@@ -36,7 +40,10 @@ namespace DataStorage {
     }
 
     void saveElement(DataQueue::QueueElement element) {
-    	debugI("Saving element");
+		if (!m_started)
+			return;
+
+    	debugV("Saving element");
     	char jsonObject[256] = {'\0'};
 
 		// convert element to json format

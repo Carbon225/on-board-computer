@@ -51,13 +51,13 @@ private:
 					}
 
 					if (gpsSensor->time.isValid()) {
-						debugI("Da time is %u:%u", gpsSensor->time.hour(), gpsSensor->time.minute());
+						debugV("Da time is %u:%u", gpsSensor->time.hour(), gpsSensor->time.minute());
 
 						// update local RTC
 						struct timeval tv;
 						tv.tv_sec = gpsSensor->time.value();
 						settimeofday(&tv, NULL);
-						// debugI("Set system time to %ld", time(NULL));
+						debugV("Set system time to %ld", ::time(NULL));
 					} else {
 						debugE("Location invalid");
 					}
@@ -131,6 +131,10 @@ public:
 
 		debugI("GPS started");
     }
+
+	LocationData getLocation() {
+		return _location;
+	}
 };
 
 

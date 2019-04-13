@@ -27,6 +27,8 @@ namespace SPIFFSHAL {
 			return;
 		}
 
+        m_mounted = true;
+
 		/*
     	ESP_LOGI(m_TAG, "Testing SPIFFS");
     	debugI("Testing SPIFFS");
@@ -46,12 +48,15 @@ namespace SPIFFSHAL {
     }
 
     void saveString(const char *data, const char *name) {
+        if (!m_mounted)
+            return;
+
 		char path[16] = {'\0'};
 
 		sprintf(path, "/%s", name);
 
 		if (!SPIFFS.exists(path)) {
-			debugI("Creating %s", path);
+			debugV("Creating %s", path);
 			FSFunctions::writeFile(SPIFFS, path, "\n\n");
 		}
 

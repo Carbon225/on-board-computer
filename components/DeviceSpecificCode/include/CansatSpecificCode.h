@@ -15,6 +15,7 @@ extern PMS5003Sensor *pms5003;
 extern MPUHAL *mpu6050;
 extern MS5611Sensor *ms5611;
 extern TMP102Sensor *tmp102;
+extern GPSSensor *gps;
 
 namespace Cansat {
 
@@ -44,6 +45,8 @@ namespace Cansat {
 		} else if (strcmp(cmd, "reset") == 0) {
 			debugW("Restarting...");
 			ESP.restart();
+		} else {
+			debugE("Unknown command received");
 		}
 	}
 
@@ -58,10 +61,12 @@ namespace Cansat {
 	}
 
 	void openValve() {
+		debugW("Opening valve");
 		valveServo.write(0);
 	}
 
 	void closeValve() {
+		debugW("Closing valve");
 		valveServo.write(90);
 	}
 
@@ -72,7 +77,8 @@ namespace Cansat {
 		while (true) {
 			xLastWakeTime = xTaskGetTickCount();
 
-			unsigned int alt = ms5611->getAltitide();
+			// unsigned int alt = ms5611->getAltitide();
+			unsigned int alt = gps->getLocation().alt;
 
 			// filter bad readings
 			if (alt > 50 && alt < 6000) {
@@ -101,11 +107,11 @@ namespace Cansat {
 		while (true) {
 			vTaskDelay(1000 / portTICK_PERIOD_MS);
 			setValveEnable(true);
-			debugW("Opening valve");
+			// debugW("Opening valve");
 			openValve();
 
 			vTaskDelay(1000 / portTICK_PERIOD_MS);
-			debugW("Closing valve");
+			// debugW("Closing valve");
 			closeValve();
 			vTaskDelay(500 / portTICK_PERIOD_MS);
 			setValveEnable(false);

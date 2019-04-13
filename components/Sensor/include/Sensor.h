@@ -11,7 +11,7 @@ private:
 	TaskHandle_t _readTaskHandle = NULL;
 
     // universal task for reading sensor
-    // has to be static because otherwise it couldn't be passed as function pointer
+    // has to be static because otherwise it couldn't be passed as function pointer to xTaskCreate
     static void genericSensorReadTask(void *pvParameters) {
         // unpack pointer to current sensor object
         Sensor *sensor = (Sensor*) pvParameters;
@@ -24,7 +24,8 @@ private:
             sensor->sendToQueues(sensor->read());
 
             // sleep
-            vTaskDelayUntil(&xLastWakeTime, sensor->m_read_delay / portTICK_PERIOD_MS);
+            // vTaskDelayUntil(&xLastWakeTime, sensor->m_read_delay / portTICK_PERIOD_MS);
+            vTaskDelay(sensor->m_read_delay / portTICK_PERIOD_MS);
         }
         sensor->_readTaskHandle = NULL;
         vTaskDelete(NULL);

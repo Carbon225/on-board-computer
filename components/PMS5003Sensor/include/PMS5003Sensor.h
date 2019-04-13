@@ -45,6 +45,7 @@ public:
 	: Sensor(pcName, n_queues),
 	  m_uart_num(uart_num) {
         printf("Starting PMS5003...\n");
+		debugD("Starting PMS5003...\n");
 
         /* Configure parameters of an UART driver,
 		 * communication pins and install the driver */
@@ -59,12 +60,15 @@ public:
 		uart_set_pin(m_uart_num, tx, rx, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
 		uart_driver_install(m_uart_num, m_bufSize, 0, 0, NULL, 0);
 
+		// enable sensor
 		pinMode(32, OUTPUT);
 		digitalWrite(32, HIGH);
 
 		// set sensor to passive move
 		uart_write_bytes(m_uart_num, m_passive_cmd, 7);
 		uart_wait_tx_done(m_uart_num, 100);
+
+		debugI("PMS5003 started\n");
     }
 
     virtual ~PMS5003Sensor() {

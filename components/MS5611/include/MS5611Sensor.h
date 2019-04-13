@@ -25,7 +25,7 @@ private:
 protected:
 	virtual DataQueue::QueueElement read() {
 		if (_started) {
-			debugD("Getting semaphore");
+			// debugD("Getting semaphore");
 			if (i2c_mutex != NULL) {
 				/*
 					while (!xSemaphoreTake(i2c_mutex, 50 / portTICK_PERIOD_MS)) {
@@ -35,23 +35,23 @@ protected:
 				*/
 				// try to get i2c semaphore
 				if  (xSemaphoreTake(i2c_mutex, 50 / portTICK_PERIOD_MS)) {
-					debugD("Reading MS");
-					int32_t realTemperature = MS5611::getTemperature();
+					// debugD("Reading MS");
+					double realTemperature = MS5611::getTemperature() / 100;
 					int32_t realPressure = MS5611::getPressure();
 
 					// give back semaphore
 					xSemaphoreGive(i2c_mutex);
-					debugD("Done reading");
+					// debugD("Done reading");
 
 					// verify data
 					if (realPressure < 90000 || realPressure > 150000) {
 						return ErrorTypeToElement(ErrorTypes::BadReading);
 					}
 
-					debugV("Temperature = %d", realTemperature);
+					// debugV("Temperature = %d", realTemperature);
 
 					DataQueue::DataUnion data;
-					// data.doubleValue = realTemperature;
+					data.doubleValue = realTemperature;
 
 					DataQueue::QueueElement element = {
 						.type = DataTypes::TemperatureMS,
@@ -60,7 +60,7 @@ protected:
 					};
 
 					// queue temperature element
-					// Sensor::sendToQueues(element);
+					Sensor::sendToQueues(element);
 
 					element.type = DataTypes::Pressure;
 					element.data.longValue = realPressure;
@@ -69,15 +69,15 @@ protected:
 					return element;
 
 				} else {
-					debugE("MS I2C blocked");
+					// debugE("MS I2C blocked");
 					return ErrorTypeToElement(ErrorTypes::I2CBlocked);
 				}				
 			} else {
-				debugE("MS semaphore null");
+				// debugE("MS semaphore null");
 				return ErrorTypeToElement(ErrorTypes::SemaphoreNULL);
 			}
 		} else {
-			debugE("MS not started");
+			// debugE("MS not started");
 			return ErrorTypeToElement(ErrorTypes::MSNotStarted);
 		}
 	}
@@ -97,8 +97,8 @@ public:
 		if (i2c_mutex != NULL) {
 			// wait for i2c semaphore
 			while (!xSemaphoreTake(i2c_mutex, 100 / portTICK_PERIOD_MS)) {
-				debugE("MS start I2C blocked");
-				Sensor::sendToQueues(ErrorTypeToElement(ErrorTypes::I2CBlocked));
+				// debugE("MS start I2C blocked");
+				// Sensor::sendToQueues(ErrorTypeToElement(ErrorTypes::I2CBlocked));
 			}
 			// start sensor and give back semaphore
 			MS5611::begin();

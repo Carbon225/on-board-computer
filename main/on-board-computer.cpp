@@ -127,15 +127,15 @@ void queueDataParser(QueueHandle_t queue) {
 // #define RECEIVER
 
 #define ENABLE_COUNTER
-// #define ENABLE_DHT
+#define ENABLE_DHT
 #define ENABLE_TMP
 #define ENABLE_MS
 // #define ENABLE_MPU
-// #define ENABLE_PMS
-// #define ENABLE_GPS
+#define ENABLE_PMS
+#define ENABLE_GPS
 // #define ENABLE_SD
 // #define ENABLE_SERVO
-// #define TEST_SERVO
+#define TEST_SERVO
 
 #define WAIT_FOR_DEBUG
 
@@ -180,9 +180,7 @@ namespace Startup {
 	}
 
 	void startTMP() {
-		debugD("I am here");
 		xTaskCreate([](void*){
-			debugD("Create TMP task");
 			tmp102 = new TMP102Sensor("TMPn1");
 			tmp102 -> addQueue(&sendQueue);
 			tmp102 -> Sensor::begin(900, 4);
@@ -263,7 +261,7 @@ extern "C" void app_main() {
 
 	// start the radio
 	radio = new RadioHAL(12, -1, 22);
-	radio->begin(433E6);
+	radio->begin(4346E5); // 434.6 MHz
 
 #ifdef RECEIVER // is receiver
 	// startOTA();
@@ -301,7 +299,6 @@ extern "C" void app_main() {
 	#endif
 
 	#ifdef ENABLE_COUNTER
-		debugD("Starting counter?");
 		xTaskCreate(loopTask, "loopTask", 4*1024, NULL, 2, NULL);
 		vTaskDelay(10 / portTICK_PERIOD_MS);
 	#endif

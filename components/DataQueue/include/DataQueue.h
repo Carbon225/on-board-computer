@@ -109,7 +109,6 @@ namespace DataQueue {
     void flushFunction(void *pvParameters) {
         // unpack parameters
         FlushFunctionParams params = *((FlushFunctionParams*) pvParameters);
-        delete (FlushFunctionParams*) pvParameters;
 
         TickType_t xLastWakeTime;
         while (true) {
@@ -117,21 +116,13 @@ namespace DataQueue {
 
             QueueElement element;
 
-            printf("\n\nQueue flush\n");
-
-            // just for testing, print when flushing
-            if (xQueuePeek(*(params.queue), &element, 0))
-                printf("\n\nFlushing queue...\n");
-
+			// tell parser to read all elements from queue
             params.dataParser(*(params.queue));
 
             // call parser for all elements
             /*while (xQueueReceive(*(params.queue), &element, 0)) {
                 params.dataParser(element);
             }*/
-
-            if (xQueuePeek(*(params.queue), &element, 0))
-            	printf("\n");
 
             // sleep
             // vTaskDelayUntil(&xLastWakeTime, params.flush_delay / portTICK_PERIOD_MS);
@@ -145,6 +136,7 @@ namespace DataQueue {
     private:
         QueueHandle_t m_queue;
         TaskHandle_t m_flushFunction = NULL;
+		FlushFunctionParams m_params;
 
     public:
         Queue(int size) {
@@ -164,14 +156,14 @@ namespace DataQueue {
             // if not flushing already
             if (m_flushFunction == NULL) {
                 // pack params
-                FlushFunctionParams *params = new FlushFunctionParams {
+                m_params = FlushFunctionParams {
                     flush_delay,
                     dataParser,
                     &m_queue
                 };
 
                 // schedule flushing task
-                xTaskCreate(flushFunction, pcName, 1024*16, params, priority, &m_flushFunction);
+                xTaskCreate(flushFunction, pcName, 1024*16, (void*)&m_params, priority, &m_flushFunction);
             }
         }
 
@@ -354,6 +346,32 @@ void logElementAsync(DataQueue::QueueElement element) {
 				Serial.println("m");
 			}
 
+			break;
+
+		case DataTypes::ErrorInfo:
+			/*
+			switch (element.data.errorInfo) {
+				case ErrorTypes::I2CBlocked:
+					debugE("I2C blocked");
+					break;
+
+				case ErrorTypes::SemaphoreNULL:
+					debugE("Semaphore NULL");
+					break;
+
+				case ErrorTypes::LoraBlocked:
+					debugE("Lora blocked");
+					break;
+
+				case ErrorTypes::MSNotStarted:
+					debugE("MS not started");
+					break;
+
+				case ErrorTypes::TMPNotStarted:
+					debugE("TMP not started");
+					break;
+			}
+			*/
 			break;
 
 		default:

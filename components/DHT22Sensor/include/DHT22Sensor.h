@@ -42,7 +42,8 @@ public:
     DHT22Sensor(gpio_num_t pin, const char *const pcName, int n_queues = 5)
         : Sensor(pcName, n_queues), DHT()
     {
-        printf("Starting DHT...\n");
+        // printf("Starting DHT...\n");
+        debugI("Starting DHT...\n");
         DHT::setDHTgpio(pin);
     }
 };
