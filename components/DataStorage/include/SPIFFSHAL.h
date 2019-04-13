@@ -27,6 +27,7 @@ namespace SPIFFSHAL {
 			return;
 		}
 
+		/*
     	ESP_LOGI(m_TAG, "Testing SPIFFS");
     	debugI("Testing SPIFFS");
     	FSFunctions::listDir(SPIFFS, "/", 0);
@@ -41,6 +42,7 @@ namespace SPIFFSHAL {
     	// FSFunctions::deleteFile(SPIFFS, "/test.txt");
     	ESP_LOGI(m_TAG, "Test complete");
     	debugI("Test complete");
+		*/
     }
 
     void saveString(const char *data, const char *name) {

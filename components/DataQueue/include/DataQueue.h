@@ -192,6 +192,7 @@ namespace DataQueue {
 
 } // namespace DataQueue
 
+// creates queue element from error code
 DataQueue::QueueElement ErrorTypeToElement(ErrorTypes::ErrorType error) {
 	DataQueue::DataUnion data;
 	data.errorInfo = error;
@@ -205,17 +206,20 @@ DataQueue::QueueElement ErrorTypeToElement(ErrorTypes::ErrorType error) {
 	return element;
 }
 
+// converts queue element to json format
 void elementToJson(DataQueue::QueueElement element, char *target) {
 	char temp[256] = {'\0'};
 	char buf[16] = {'\0'};
 	char time_buf[32] = {'\0'};
 
+	// add timestamp
 	strcat(target, R"({"time":)");
 	sprintf(time_buf, "%ld,", time(NULL)); // epoch time
 	strcat(target, time_buf);
 
 	switch (element.type) {
 		case DataTypes::Counter:
+			// add type and value
 			strcat(target, R"("type":"Counter",)");
 			sprintf(temp, R"("value":%d})",
 					element.data.intValue);
@@ -285,6 +289,7 @@ void elementToJson(DataQueue::QueueElement element, char *target) {
 	}
 }
 
+// print queue element (called from interrupts)
 void logElementAsync(DataQueue::QueueElement element) {
 	switch (element.type) {
 		case DataTypes::Counter:
@@ -357,6 +362,7 @@ void logElementAsync(DataQueue::QueueElement element) {
 	}
 }
 
+// prints element (called not from interrupt)
 void logElement(DataQueue::QueueElement element, bool async = false) {
 	if (async) {
 		logElementAsync(element);

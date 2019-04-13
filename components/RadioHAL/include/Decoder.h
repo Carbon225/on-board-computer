@@ -13,8 +13,10 @@
 
 #define PACKET_SIZE 64
 
+// decoce packet
 int parseData(uint8_t data[PACKET_SIZE], void (*parser)(DataQueue::QueueElement))
 {
+    // check packet start
     if (data[0] != 0x00)
         return 1;
 
@@ -28,18 +30,22 @@ int parseData(uint8_t data[PACKET_SIZE], void (*parser)(DataQueue::QueueElement)
     if (data[PACKET_SIZE - 1] != sum)
         return 1;
 
+    // go through every byte
     for (int i = 1; i < PACKET_SIZE - 1;)
     {
         DataQueue::QueueElement element;
         DataQueue::DataUnion dataUnion;
 
+        // read data type
         uint8_t dataType = data[i];
 
         switch (dataType)
         {
         case DataTypes::Counter:
+            // for every type copy x bytes from packet into queue element
             memcpy((void *)&(dataUnion.intValue), data + i + 1, sizeof(int));
             element.type = DataTypes::Counter;
+            // skip x bytes
             i += sizeof(int) + 1;
             break;
 
@@ -115,13 +121,16 @@ int parseData(uint8_t data[PACKET_SIZE], void (*parser)(DataQueue::QueueElement)
     return 0;
 }
 
+// encode element to packet
 int encode(DataQueue::QueueElement element, uint8_t *target) {
     *target = (uint8_t) element.type;
 
     switch (element.type)
     {
     case DataTypes::Counter:
+        // for every type copy queue element into packet
         memcpy((void*) target + 1, (void*)&(element.data.intValue), sizeof(int));
+        // return data size
         return sizeof(int) + 1;
         break;
 

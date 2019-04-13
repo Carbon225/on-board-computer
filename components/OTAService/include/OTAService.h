@@ -24,9 +24,6 @@ namespace OTAService {
 	const char* ssid = "xtr-cansat";
 	const char* password = "12345osiem";
 
-	/*const char* ssid = "Carbon Industries Server Farm";
-	const char* password = "****";*/
-
 	WebServer server(80);
 	WiFiClient client;
 
@@ -34,6 +31,7 @@ namespace OTAService {
 
 	void loop();
 
+	// handle OTA requests
     void OTATask(void*) {
         TickType_t xLastWakeTime;
         for (;;) {
@@ -44,6 +42,7 @@ namespace OTAService {
         vTaskDelete(NULL);
     }
 
+	// start OTA with telnet
     void testBegin(const char *host) {
     	// Connect to WiFi network
 		WiFi.begin(ssid, password);
@@ -60,8 +59,8 @@ namespace OTAService {
 		Serial.print("IP address: ");
 		Serial.println(WiFi.localIP());
 
-		/*use mdns for host name resolution*/
-		if (!MDNS.begin(host)) { //http://esp32.local
+		// use mdns for host name resolution
+		if (!MDNS.begin(host)) {
 			Serial.println("Error setting up MDNS responder!");
 			while (1) {
 				delay(1000);
@@ -74,12 +73,12 @@ namespace OTAService {
 
 		Debug.begin(host); // Initiaze the telnet server
 		Debug.setResetCmdEnabled(true); // Enable the reset command
-		Debug.showProfiler(true); // Profiler (Good to measure times, to optimize codes)
-		Debug.showColors(true); // Colors
+		Debug.showProfiler(true);
+		Debug.showColors(true);
 
 		debug_started = true;
 
-		/*return index page which is stored in serverIndex */
+		// set up OTA webpage
 		server.on("/", HTTP_GET, []() {
 			server.sendHeader("Connection", "close");
 			server.send(200, "text/html", loginIndex);
@@ -90,7 +89,7 @@ namespace OTAService {
 			server.send(200, "text/html", serverIndex);
 		});
 
-		/*handling uploading firmware file */
+		// handling uploading firmware file
 		server.on("/update", HTTP_POST, []() {
 			server.sendHeader("Connection", "close");
 			server.send(200, "text/plain", (Update.hasError()) ? "FAIL" : "OK");
@@ -100,16 +99,16 @@ namespace OTAService {
 			if (upload.status == UPLOAD_FILE_START) {
 				debugI("Downloading OTA");
 				Serial.printf("Update: %s\n", upload.filename.c_str());
-				if (!Update.begin(UPDATE_SIZE_UNKNOWN)) { //start with max available size
+				if (!Update.begin(UPDATE_SIZE_UNKNOWN)) {
 					Update.printError(Serial);
 				}
 			} else if (upload.status == UPLOAD_FILE_WRITE) {
-				/* flashing firmware to ESP*/
+				// flashing firmware to ESP
 				if (Update.write(upload.buf, upload.currentSize) != upload.currentSize) {
 					Update.printError(Serial);
 				}
 			} else if (upload.status == UPLOAD_FILE_END) {
-				if (Update.end(true)) { //true to set the size to the current progress
+				if (Update.end(true)) {
 					debugI("OTA successful, rebooting");
 					Serial.printf("Update Success: %u\nRebooting...\n", upload.totalSize);
 				} else {
@@ -122,6 +121,7 @@ namespace OTAService {
         xTaskCreate(OTATask, "OTATask", 1024*8, NULL, 2, NULL);
     }
 
+	// OTA without telnet
     void beginBasic(const char *host) {
     	// Connect to WiFi network
 		WiFi.begin(ssid, password);
@@ -138,8 +138,8 @@ namespace OTAService {
 		Serial.print("IP address: ");
 		Serial.println(WiFi.localIP());
 
-		/*use mdns for host name resolution*/
-		if (!MDNS.begin(host)) { //http://esp32.local
+		// use mdns for host name resolution
+		if (!MDNS.begin(host)) {
 			Serial.println("Error setting up MDNS responder!");
 			while (1) {
 				delay(1000);
@@ -148,7 +148,7 @@ namespace OTAService {
 
 		Serial.println("mDNS responder started");
 
-		/*return index page which is stored in serverIndex */
+		// return index page which is stored in serverIndex
 		server.on("/", HTTP_GET, []() {
 			server.sendHeader("Connection", "close");
 			server.send(200, "text/html", loginIndex);
@@ -159,7 +159,7 @@ namespace OTAService {
 			server.send(200, "text/html", serverIndex);
 		});
 
-		/*handling uploading firmware file */
+		// handling uploading firmware file
 		server.on("/update", HTTP_POST, []() {
 			server.sendHeader("Connection", "close");
 			server.send(200, "text/plain", (Update.hasError()) ? "FAIL" : "OK");
@@ -169,16 +169,16 @@ namespace OTAService {
 			if (upload.status == UPLOAD_FILE_START) {
 				debugI("Downloading OTA");
 				Serial.printf("Update: %s\n", upload.filename.c_str());
-				if (!Update.begin(UPDATE_SIZE_UNKNOWN)) { //start with max available size
+				if (!Update.begin(UPDATE_SIZE_UNKNOWN)) {
 					Update.printError(Serial);
 				}
 			} else if (upload.status == UPLOAD_FILE_WRITE) {
-				/* flashing firmware to ESP*/
+				// flashing firmware to ESP
 				if (Update.write(upload.buf, upload.currentSize) != upload.currentSize) {
 					Update.printError(Serial);
 				}
 			} else if (upload.status == UPLOAD_FILE_END) {
-				if (Update.end(true)) { //true to set the size to the current progress
+				if (Update.end(true)) {
 					debugI("OTA successful, rebooting");
 					Serial.printf("Update Success: %u\nRebooting...\n", upload.totalSize);
 				} else {

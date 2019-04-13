@@ -29,10 +29,13 @@ namespace GroundStation {
 			Serial.println(LoRa.packetSnr());
 
 			uint8_t data[PACKET_SIZE];
+			// receive packet from probe
 			LoRa.readBytes(data, PACKET_SIZE);
 			// generateSampleData(data);
 
+			// parse every element
 			int ret = parseData(data, [](DataQueue::QueueElement element) {
+				// onReceive is an interrupt so we use async function
 				logElementAsync(element);
 			});
 
@@ -51,16 +54,19 @@ namespace GroundStation {
 		}
 	}
 
+	// serial for sending data to computer
 	void beginSerial() {
 		Serial2.begin(115200);
 	}
 
+	// send 1 element to computer
 	void sendElement(DataQueue::QueueElement element) {
 		char message[256] = {'\0'};
 		elementToJson(element, message);
-		Serial.println(message);
+		Serial2.println(message);
 	}
 
+	// send array of elements
 	void sendArray(DataQueue::QueueElement elements[], int length) {
 		for (int i = 0; i < length; i++) {
 			sendElement(elements[i]);

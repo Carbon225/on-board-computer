@@ -13,8 +13,10 @@ extern RemoteDebug Debug;
 
 namespace DataStorage {
 
+	// name for ESP_LOG
 	const char *m_TAG = "DataStorage";
 
+	// name of current flight
 	char m_flightName[9] = {'\0'};
 
     void begin() {
@@ -22,6 +24,7 @@ namespace DataStorage {
     	ESP_LOGI(m_TAG, "Staring data storage");
     	debugI("Staring data storage");
 
+		// set flight name
     	strcpy(m_flightName, "test");
 
     	SDCard::begin();
@@ -36,9 +39,11 @@ namespace DataStorage {
     	debugI("Saving element");
     	char jsonObject[256] = {'\0'};
 
+		// convert element to json format
     	elementToJson(element, jsonObject);
     	strcat(jsonObject, ",\n");
 
+		// based on type save to SD card or SPIFFS
     	switch (element.type) {
 			case DataTypes::Counter:
 

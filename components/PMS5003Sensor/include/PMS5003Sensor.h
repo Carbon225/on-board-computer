@@ -8,7 +8,9 @@
 class PMS5003Sensor : public Sensor {
 private:
 	const int m_bufSize = 1024; // min 128
+	// send to pms to enable passive mode
 	const char m_passive_cmd[7] = {0x42, 0x4d, 0xe1, 0x00, 0x00, 0x01, 0x70};
+	// send to pms to request data
 	const char m_request_cmd[7] = {0x42, 0x4d, 0xe2, 0x00, 0x00, 0x01, 0x71};
 	const uart_port_t m_uart_num;
 
@@ -69,10 +71,12 @@ public:
     	uart_driver_delete(m_uart_num);
     }
 
+	// combine 2 bytes into number
     static uint16_t bytes2Int(uint8_t *data) {
     	return (uint16_t)((data[0] << 8) | (data[1]));
     }
 
+	// decode data from pms
     static PMSData parseData(uint8_t *data) {
     	PMSData errorStruct = {
     			0xffff, 0xffff, 0xffff,

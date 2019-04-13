@@ -25,15 +25,19 @@ private:
 	LocationData _location;
 
 	static void loopTask(void *gpsSensorVoid) {
+		// get class instance pointer
 		GPSSensor *gpsSensor = (GPSSensor*) gpsSensorVoid;
 
 		while (true) {
 			unsigned char c = '\0';
+			// try to read one byte
 			while (uart_read_bytes(UART_NUM_1, &c, 1, 0) > 0) {
 				// debugD("Got byte from GPS");
+				// get gps data from read bytes
 				if (gpsSensor->encode(c)) {
 					// debugD("Got complete data from GPS");
 					if (gpsSensor->location.isValid()) {
+						// set current location
 						gpsSensor->_location.lat = gpsSensor->location.lat();
 						gpsSensor->_location.lng = gpsSensor->location.lng();
 					} else {
@@ -49,6 +53,7 @@ private:
 					if (gpsSensor->time.isValid()) {
 						debugI("Da time is %u:%u", gpsSensor->time.hour(), gpsSensor->time.minute());
 
+						// update local RTC
 						struct timeval tv;
 						tv.tv_sec = gpsSensor->time.value();
 						settimeofday(&tv, NULL);
@@ -99,6 +104,7 @@ public:
     }
 
     virtual ~GPSSensor() {
+		// close serial port and kill loop task
     	uart_driver_delete(UART_NUM_1);
     	if (_loopTaskHandle != NULL)
     		vTaskDelete(_loopTaskHandle);
@@ -107,7 +113,7 @@ public:
     void setup() {
 		debugD("GPS starting...");
 
-
+		// serial port configuration
 		uart_config_t uart_config = {
 			.baud_rate = 9600,
 			.data_bits = UART_DATA_8_BITS,
@@ -115,10 +121,12 @@ public:
 			.stop_bits = UART_STOP_BITS_1,
 			.flow_ctrl = UART_HW_FLOWCTRL_DISABLE
 		};
+		// open serial port
 		uart_param_config(UART_NUM_1, &uart_config);
 		uart_set_pin(UART_NUM_1, 9, 10, -1, -1);
 		uart_driver_install(UART_NUM_1, 8*1024, 0, 0, NULL, 0);
 
+		// start reading loop task
 		xTaskCreate(loopTask, "gpsLoopTask", 8*1024, (void*) this, 5, &_loopTaskHandle);
 
 		debugI("GPS started");

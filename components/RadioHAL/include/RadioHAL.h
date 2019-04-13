@@ -44,6 +44,7 @@ public:
 			// long sbw = 125E3;
 			int crd = 8;
 
+			// set radio parameters
 			LoRa.setTxPower(txPower);
 			LoRa.setSpreadingFactor(sf);
 			LoRa.setSignalBandwidth(sbw);
@@ -69,6 +70,7 @@ public:
 		}
 	}
 
+	// start receiving data
 	void startReceive(void (*onReceive)(int packetSize), int packetSize = 0) {
 		m_onReceive = onReceive;
 		LoRa.onReceive(m_onReceive);
@@ -78,6 +80,7 @@ public:
 	void send(uint8_t *data) {
 		if (_started) {
 			if (lora_mutex != NULL) {
+				// get lora semaphore
 				if (xSemaphoreTake(lora_mutex, 20 / portTICK_PERIOD_MS)) {
 					ESP_LOGD(m_TAG, "Sending packet");
 

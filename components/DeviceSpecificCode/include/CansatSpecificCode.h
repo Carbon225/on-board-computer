@@ -8,6 +8,7 @@
 #include "ESP32_Servo.h"
 #include "RemoteDebug.h"
 
+// created in main
 extern RemoteDebug Debug;
 extern DHT22Sensor *dht22; // (GPIO_NUM_4, "DHTn1");
 extern PMS5003Sensor *pms5003;
@@ -20,6 +21,7 @@ namespace Cansat {
 	// interrupt
 	void onReceive(int packetSize) {
 		char cmd[16] = {'\0'};
+		// receive from ground station
 		LoRa.readBytes(cmd, packetSize);
 
 		debugI("Received %s", cmd);
@@ -74,6 +76,7 @@ namespace Cansat {
 
 			// filter bad readings
 			if (alt > 50 && alt < 6000) {
+				// if we are 300 meters below max altitude open valve
 				if (alt > highest_alt) {
 					highest_alt = alt;
 				} else if (highest_alt - alt > 300) {
@@ -83,6 +86,7 @@ namespace Cansat {
 					closeValve();
 					setValveEnable(false);
 
+					// after opening and closing valve kill task
 					vTaskDelete(NULL);
 				}
 			}

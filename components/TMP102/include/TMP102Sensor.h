@@ -25,11 +25,13 @@ protected:
 	virtual DataQueue::QueueElement read() {
 		if (_started) {
 			if (i2c_mutex != NULL) {
+				//  wait for i2c semaphore
 				while (!xSemaphoreTake(i2c_mutex, 50 / portTICK_PERIOD_MS)) {
 					debugE("TMP I2C blocked");
 					Sensor::sendToQueues(ErrorTypeToElement(ErrorTypes::I2CBlocked));
 				}
 
+				// read sensor and give back semaphore
 				TMP102::wakeup();
 				float temp = TMP102::readTempC();
 				TMP102::sleep();
@@ -45,6 +47,7 @@ protected:
 					.time = (uint16_t) (millis() / 1000)
 				};
 
+				// save temperature element
 				return element;
 				/*
 					} else {
@@ -67,6 +70,7 @@ public:
 		debugD("Starting TMP...\n");
 
 		if (i2c_mutex != NULL) {
+			// wait for i2c semaphore to start sensor
 			while (!xSemaphoreTake(i2c_mutex, 100 / portTICK_PERIOD_MS)) {
 				debugE("TMP start I2C blocked");
 				Sensor::sendToQueues(ErrorTypeToElement(ErrorTypes::I2CBlocked));

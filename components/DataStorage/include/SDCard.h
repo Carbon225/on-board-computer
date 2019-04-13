@@ -76,23 +76,23 @@ namespace SDCard {
 		ESP_LOGI(m_TAG, "SD Card started");
 		debugI("SD Card started");
 
-
-		ESP_LOGI(m_TAG, "Testing SD");
-		debugI("Testing SD");
-		FSFunctions::createDir(SD, "/test");
-		FSFunctions::listDir(SD, "/", 0);
-		FSFunctions::writeFile(SD, "/hello.txt", "Hello ");
-		FSFunctions::appendFile(SD, "/hello.txt", "World!\r\n");
-		FSFunctions::readFile(SD, "/hello.txt");
-		FSFunctions::renameFile(SD, "/hello.txt", "/foo.txt");
-		FSFunctions::readFile(SD, "/foo.txt");
-		FSFunctions::listDir(SD, "/", 0);
-		// FSFunctions::deleteFile(SD, "/foo.txt");
-		// FSFunctions::testFileIO(SD, "/test.txt");
-		// FSFunctions::deleteFile(SD, "/test.txt");
-		ESP_LOGI(m_TAG, "Test complete");
-		debugI("Test complete");
-
+		/* SD card test
+			ESP_LOGI(m_TAG, "Testing SD");
+			debugI("Testing SD");
+			FSFunctions::createDir(SD, "/test");
+			FSFunctions::listDir(SD, "/", 0);
+			FSFunctions::writeFile(SD, "/hello.txt", "Hello ");
+			FSFunctions::appendFile(SD, "/hello.txt", "World!\r\n");
+			FSFunctions::readFile(SD, "/hello.txt");
+			FSFunctions::renameFile(SD, "/hello.txt", "/foo.txt");
+			FSFunctions::readFile(SD, "/foo.txt");
+			FSFunctions::listDir(SD, "/", 0);
+			// FSFunctions::deleteFile(SD, "/foo.txt");
+			// FSFunctions::testFileIO(SD, "/test.txt");
+			// FSFunctions::deleteFile(SD, "/test.txt");
+			ESP_LOGI(m_TAG, "Test complete");
+			debugI("Test complete");
+		*/
     }
 
     void saveString(const char *data, const char *name, const char *flightName) {
