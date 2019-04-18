@@ -112,7 +112,7 @@ namespace SDCard {
 
     	sprintf(path, "/%s", name);
 
-		// debugV("%s -> %s", data, path);
+		debugV("%s -> %s", data, path);
 
 		if (!SD.exists(path)) {
 			debugV("Creating %s", path);

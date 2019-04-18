@@ -124,7 +124,10 @@ namespace DataQueue {
                 params.dataParser(element);
             }*/
 
+			debugD("%d free space", uxTaskGetStackHighWaterMark(NULL));
+
             // sleep
+			debugD("Sleep for %d", params.flush_delay);
             // vTaskDelayUntil(&xLastWakeTime, params.flush_delay / portTICK_PERIOD_MS);
             vTaskDelay(params.flush_delay / portTICK_PERIOD_MS);
         }
@@ -163,7 +166,7 @@ namespace DataQueue {
                 };
 
                 // schedule flushing task
-                xTaskCreate(flushFunction, pcName, 1024*16, (void*)&m_params, priority, &m_flushFunction);
+                xTaskCreate(flushFunction, pcName, 16*1024, (void*)&m_params, priority, &m_flushFunction);
             }
         }
 
@@ -205,8 +208,8 @@ void elementToJson(DataQueue::QueueElement element, char *target) {
 	char time_buf[32] = {'\0'};
 
 	// add timestamp
-	strcat(target, R"({"time":)");
-	sprintf(time_buf, "%ld,", time(NULL)); // epoch time
+	strcat(target, R"({"time":0,)");
+	// sprintf(time_buf, "%ld,", time(NULL)); // epoch time
 	strcat(target, time_buf);
 
 	switch (element.type) {
@@ -266,7 +269,25 @@ void elementToJson(DataQueue::QueueElement element, char *target) {
 			break;
 
 		case DataTypes::PMS5003:
-			// strcat(target, R"("type":"PMS5003",)");
+			strcat(target, R"("type":"PMS",)");
+			sprintf(temp, R"("value":[%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u]})",
+					element.data.pmsValue.data1,
+					element.data.pmsValue.data2,
+					element.data.pmsValue.data3,
+					element.data.pmsValue.data4,
+
+					element.data.pmsValue.data5,
+					element.data.pmsValue.data6,
+					element.data.pmsValue.data7,
+					element.data.pmsValue.data8,
+
+					element.data.pmsValue.data9,
+					element.data.pmsValue.data10,
+					element.data.pmsValue.data11,
+					element.data.pmsValue.data12,
+
+					element.data.pmsValue.data13);
+			strcat(target, temp);
 			break;
 
 		case DataTypes::LocationData:

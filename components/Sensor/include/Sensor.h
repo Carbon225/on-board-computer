@@ -23,6 +23,8 @@ private:
             // send element from virtual read() to all queues
             sensor->sendToQueues(sensor->read());
 
+            debugD("%d free space", uxTaskGetStackHighWaterMark(NULL));
+
             // sleep
             // vTaskDelayUntil(&xLastWakeTime, sensor->m_read_delay / portTICK_PERIOD_MS);
             vTaskDelay(sensor->m_read_delay / portTICK_PERIOD_MS);
@@ -83,7 +85,7 @@ public:
         m_read_delay = read_delay;
 
         // pass this pointer to the static function
-        xTaskCreate(genericSensorReadTask, m_pcName, 2048, this, read_priority, &_readTaskHandle);
+        xTaskCreate(genericSensorReadTask, m_pcName, 4*1024, this, read_priority, &_readTaskHandle);
 
         // TaskManager::scheduleTask(genericSensorReadTask, m_pcName, 0, this, read_priority);
     }
