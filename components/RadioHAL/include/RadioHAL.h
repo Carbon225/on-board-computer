@@ -16,7 +16,7 @@
 
 extern RemoteDebug Debug;
 extern SemaphoreHandle_t lora_mutex;
-extern DataQueue::Queue sendQueue;
+extern DataQueue::Queue *sendQueue;
 
 
 class RadioHAL {
@@ -103,11 +103,11 @@ public:
 					debugD("Packet sent in %d ms, late by %d ms", transmission_time, send_delay);
 				} else {
 					DataQueue::QueueElement error = ErrorTypeToElement(ErrorTypes::LoraBlocked);
-					sendQueue.add(&error);
+					sendQueue->add(&error);
 				}
 			} else {
 				DataQueue::QueueElement error = ErrorTypeToElement(ErrorTypes::SemaphoreNULL);
-				sendQueue.add(&error);
+				sendQueue->add(&error);
 			}
 		}
 	}

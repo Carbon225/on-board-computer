@@ -42,7 +42,8 @@ SemaphoreHandle_t i2c_mutex = NULL;
 SemaphoreHandle_t lora_mutex = NULL;
 
 // main data queue for sending data over radio
-DataQueue::Queue sendQueue(128);
+// DataQueue::Queue sendQueue(128);
+DataQueue::Queue *sendQueue;
 
 
 int counter = 0;
@@ -60,10 +61,12 @@ void loopTask(void *ignore) {
 			.time = (uint16_t) (millis() / 1000)
         };
 
-        sendQueue.add(&element);
+        sendQueue->add(&element);
         counter++;
 
 		// debugD("Counter added to queue");
+
+		debugD("%d free space", uxTaskGetStackHighWaterMark(NULL));
 
         vTaskDelay(2000 / portTICK_PERIOD_MS);
     }
@@ -120,6 +123,8 @@ void queueDataParser(QueueHandle_t queue) {
 
 	if (packet_size > 1)
 		radio->send(packet);
+
+	debugD("%d free space", uxTaskGetStackHighWaterMark(NULL));
 }
 
 // program settings
@@ -131,11 +136,11 @@ void queueDataParser(QueueHandle_t queue) {
 #define ENABLE_TMP
 #define ENABLE_MS
 // #define ENABLE_MPU
-#define ENABLE_PMS
+// #define ENABLE_PMS
 #define ENABLE_GPS
 // #define ENABLE_SD
 // #define ENABLE_SERVO
-#define TEST_SERVO
+// #define TEST_SERVO
 
 #define WAIT_FOR_DEBUG
 
@@ -154,6 +159,9 @@ namespace Startup {
 		xTaskCreate([](void*){
 			// vTaskDelay(5000 / portTICK_PERIOD_MS);
 			OTAService::testBegin(hostname);
+
+			debugD("%d free space OTA", uxTaskGetStackHighWaterMark(NULL));
+
 			vTaskDelete(NULL);
 		}, "startOTA", 16*1024, NULL, 3, NULL);
 	}
@@ -171,9 +179,11 @@ namespace Startup {
 			// start sensor with constructor
 			dht22 = new DHT22Sensor(GPIO_NUM_4, "DHTn1");
 			// tell it to save to sendQueue
-			dht22 -> addQueue(&sendQueue);
+			dht22 -> addQueue(sendQueue);
 			// start the sensor class (reading every 1500 ms, task priority 3)
 			dht22 -> begin(1500, 3);
+
+			debugD("%d free space DHT", uxTaskGetStackHighWaterMark(NULL));
 
 			vTaskDelete(NULL);
 		}, "startDHT", 1*1024, NULL, 3, NULL);
@@ -182,8 +192,10 @@ namespace Startup {
 	void startTMP() {
 		xTaskCreate([](void*){
 			tmp102 = new TMP102Sensor("TMPn1");
-			tmp102 -> addQueue(&sendQueue);
+			tmp102 -> addQueue(sendQueue);
 			tmp102 -> Sensor::begin(900, 4);
+
+			debugD("%d free space TMP", uxTaskGetStackHighWaterMark(NULL));
 
 			vTaskDelete(NULL);
 		}, "startTMP", 2*1024, NULL, 3, NULL);
@@ -192,8 +204,10 @@ namespace Startup {
 	void startMS() {
 		xTaskCreate([](void*){
 			ms5611 = new MS5611Sensor("MSn1");
-			ms5611 -> addQueue(&sendQueue);
+			ms5611 -> addQueue(sendQueue);
 			ms5611 -> Sensor::begin(100, 5);
+
+			debugD("%d free space MS", uxTaskGetStackHighWaterMark(NULL));
 
 			vTaskDelete(NULL);
 		}, "startMS", 2*1024, NULL, 3, NULL);
@@ -202,8 +216,10 @@ namespace Startup {
 	void startMPU() {
 		xTaskCreate([](void*){
 			mpu6050 = new MPUHAL("mpun1");
-			mpu6050->addQueue(&sendQueue);
+			mpu6050->addQueue(sendQueue);
 			mpu6050->begin(1000, 3);
+
+			debugD("%d free space MPU", uxTaskGetStackHighWaterMark(NULL));
 
 			vTaskDelete(NULL);
 		}, "startMPU", 1*1024, NULL, 3, NULL);
@@ -213,8 +229,10 @@ namespace Startup {
 		xTaskCreate([](void*){
 			pms5003 = new PMS5003Sensor(UART_NUM_2, GPIO_NUM_17, GPIO_NUM_16, "pms5003");
 			// pms5003 = new PMS5003Sensor(UART_NUM_2, GPIO_NUM_16, GPIO_NUM_17, "pms5003");
-			pms5003->addQueue(&sendQueue);
+			pms5003->addQueue(sendQueue);
 			pms5003->begin(2000, 3);
+
+			debugD("%d free space PMS", uxTaskGetStackHighWaterMark(NULL));
 
 			vTaskDelete(NULL);
 		}, "startPMS", 1*1024, NULL, 3, NULL);
@@ -223,19 +241,23 @@ namespace Startup {
 	void startGPS() {
 		xTaskCreate([](void*){
 			gps = new GPSSensor("GPSSensor");
-			gps -> addQueue(&sendQueue);
-			gps -> Sensor::begin(3000, 2);
+			gps -> addQueue(sendQueue);
+			gps -> Sensor::begin(3000, 3);
+
+			debugD("%d free space GPS", uxTaskGetStackHighWaterMark(NULL));
 
 			vTaskDelete(NULL);
-		}, "startGPS", 1*1024, NULL, 3, NULL);
+		}, "startGPS", 2*1024, NULL, 3, NULL);
 	}
 
 	void startSD() {
 		xTaskCreate([](void*){
 			DataStorage::begin();
 
+			debugD("%d free space SD", uxTaskGetStackHighWaterMark(NULL));
+
 			vTaskDelete(NULL);
-		}, "startSD", 1*1024, NULL, 3, NULL);
+		}, "startSD", 3*1024, NULL, 3, NULL);
 	}
 
 } // namespace Startup
@@ -246,7 +268,7 @@ extern "C" void app_main() {
 	// initialize the arduino component
 	initArduino();
 	pinMode(SAFE_MODE_PIN, INPUT_PULLUP);
-	Serial.begin(115200);
+	// Serial.begin(115200);
 
 	// check the safe mode pin and enter safe mode if needed
 	if (digitalRead(SAFE_MODE_PIN) == LOW) {
@@ -259,9 +281,11 @@ extern "C" void app_main() {
 	lora_mutex = xSemaphoreCreateMutex();
 	i2c_mutex = xSemaphoreCreateMutex();
 
+	sendQueue = new DataQueue::Queue(256);
+
 	// start the radio
 	radio = new RadioHAL(12, -1, 22);
-	radio->begin(4346E5); // 434.6 MHz
+	// radio->begin(4346E5); // 434.6 MHz
 
 #ifdef RECEIVER // is receiver
 	// startOTA();
@@ -285,6 +309,7 @@ extern "C" void app_main() {
 
 			vTaskDelay(1000 / portTICK_PERIOD_MS);
 			debugW("System starting...");
+			vTaskDelay(2000 / portTICK_PERIOD_MS);
 		#endif
 	#endif
 
@@ -292,14 +317,8 @@ extern "C" void app_main() {
 		Startup::startSD();
 	#endif
 
-	#ifdef ENABLE_GPS
-		Startup::startGPS();
-		// small delay to offset sensor readings
-		vTaskDelay(10 / portTICK_PERIOD_MS);
-	#endif
-
 	#ifdef ENABLE_COUNTER
-		xTaskCreate(loopTask, "loopTask", 4*1024, NULL, 2, NULL);
+		xTaskCreate(loopTask, "loopTask", 1*1024, NULL, 2, NULL);
 		vTaskDelay(10 / portTICK_PERIOD_MS);
 	#endif
 
@@ -324,6 +343,12 @@ extern "C" void app_main() {
 		vTaskDelay(10 / portTICK_PERIOD_MS);
 	#endif
 
+	#ifdef ENABLE_GPS
+		Startup::startGPS();
+		// small delay to offset sensor readings
+		vTaskDelay(10 / portTICK_PERIOD_MS);
+	#endif
+
 	#ifdef ENABLE_MPU
 		Startup::startMPU();
 		vTaskDelay(10 / portTICK_PERIOD_MS);
@@ -342,7 +367,7 @@ extern "C" void app_main() {
 	#endif
 
 	// start flushing the queue
-	sendQueue.setFlushFunction(queueDataParser, 1300, "sendQueue", 4);
+	sendQueue->setFlushFunction(queueDataParser, 1300, "sendQueue", 4);
 
 	// start receiving data from ground station
 	radio->startReceive(Cansat::onReceive);
