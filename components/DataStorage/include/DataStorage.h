@@ -30,7 +30,7 @@ namespace DataStorage {
     	strcpy(m_flightName, "test");
 
     	SDCard::begin();
-    	SPIFFSHAL::begin();
+    	// SPIFFSHAL::begin();
 
 		m_started = true;
     }
