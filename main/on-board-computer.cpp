@@ -133,7 +133,7 @@ void queueDataParser(QueueHandle_t queue) {
 
 // #define ENABLE_COUNTER
 #define ENABLE_DHT
-// #define ENABLE_TMP
+#define ENABLE_TMP
 #define ENABLE_MS
 // #define ENABLE_MPU
 #define ENABLE_PMS
@@ -203,7 +203,7 @@ namespace Startup {
 			vTaskDelete(NULL);
 		}, "startTMP", 3*1024, NULL, 3, NULL);*/
 		tmp102.addQueue(&sendQueue);
-		tmp102.Sensor::begin(900, 4, [](){
+		tmp102.Sensor::begin(1000, 4, [](){
 			tmp102.start();
 		});
 	}
@@ -340,7 +340,7 @@ extern "C" void app_main() {
 	#ifdef ENABLE_MS
 		Startup::startMS();
 		// bigger delay to make MS and TMP read at different times
-		vTaskDelay(400 / portTICK_PERIOD_MS);
+		vTaskDelay(450 / portTICK_PERIOD_MS);
 	#endif
 
 	#ifdef ENABLE_TMP

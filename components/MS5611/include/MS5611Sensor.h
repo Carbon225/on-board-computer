@@ -27,51 +27,57 @@ protected:
 		if (_started) {
 			// debugD("Getting semaphore");
 			if (i2c_mutex != NULL) {
-				/*
-					while (!xSemaphoreTake(i2c_mutex, 50 / portTICK_PERIOD_MS)) {
+				
+				int count = 0;
+				while (!xSemaphoreTake(i2c_mutex, 10 / portTICK_PERIOD_MS)) {
+					if (count > 10) {
 						debugE("MS I2C blocked");
 						Sensor::sendToQueues(ErrorTypeToElement(ErrorTypes::I2CBlocked));
 					}
-				*/
+					count++;
+				}
+				
 				// try to get i2c semaphore
-				if  (xSemaphoreTake(i2c_mutex, 10 / portTICK_PERIOD_MS)) {
-					// debugD("Reading MS");
-					double realTemperature = MS5611::getTemperature() / 100;
-					int32_t realPressure = MS5611::getPressure();
+				// if  (xSemaphoreTake(i2c_mutex, 50 / portTICK_PERIOD_MS)) {
+				// debugD("Reading MS");
+				double realTemperature = MS5611::getTemperature() / 100;
+				int32_t realPressure = MS5611::getPressure();
 
-					// give back semaphore
-					xSemaphoreGive(i2c_mutex);
-					// debugD("Done reading");
+				// give back semaphore
+				xSemaphoreGive(i2c_mutex);
+				// debugD("Done reading");
 
-					// verify data
-					if (realPressure < 90000 || realPressure > 150000) {
-						return ErrorTypeToElement(ErrorTypes::BadReading);
+				// verify data
+				if (realPressure < 90000 || realPressure > 150000) {
+					return ErrorTypeToElement(ErrorTypes::BadReading);
+				}
+
+				// debugV("Temperature = %d", realTemperature);
+
+				DataQueue::DataUnion data;
+				data.doubleValue = realTemperature;
+
+				DataQueue::QueueElement element = {
+					.type = DataTypes::TemperatureMS,
+					.data = data,
+					.time = (uint16_t) (millis() / 1000)
+				};
+
+				// queue temperature element
+				Sensor::sendToQueues(element);
+
+				element.type = DataTypes::Pressure;
+				element.data.longValue = realPressure;
+
+				// queue pressure element
+				return element;
+
+				/*
+					} else {
+						// debugE("MS I2C blocked");
+						return ErrorTypeToElement(ErrorTypes::I2CBlocked);
 					}
-
-					// debugV("Temperature = %d", realTemperature);
-
-					DataQueue::DataUnion data;
-					data.doubleValue = realTemperature;
-
-					DataQueue::QueueElement element = {
-						.type = DataTypes::TemperatureMS,
-						.data = data,
-						.time = (uint16_t) (millis() / 1000)
-					};
-
-					// queue temperature element
-					Sensor::sendToQueues(element);
-
-					element.type = DataTypes::Pressure;
-					element.data.longValue = realPressure;
-
-					// queue pressure element
-					return element;
-
-				} else {
-					// debugE("MS I2C blocked");
-					return ErrorTypeToElement(ErrorTypes::I2CBlocked);
-				}				
+				*/				
 			} else {
 				// debugE("MS semaphore null");
 				return ErrorTypeToElement(ErrorTypes::SemaphoreNULL);
