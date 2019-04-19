@@ -36,8 +36,8 @@ namespace Cansat {
 
 			debugW("Going to sleep");
 
-			esp_sleep_enable_timer_wakeup(6e7); // 1 minute in us
-			esp_deep_sleep_start();
+			// esp_sleep_enable_timer_wakeup(6e7); // 1 minute in us
+			// esp_deep_sleep_start();
 
 		} else if (strcmp(cmd, "reset") == 0) {
 			debugW("Restarting...");
