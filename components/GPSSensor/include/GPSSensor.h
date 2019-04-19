@@ -95,12 +95,9 @@ protected:
     }
 
 public:
-    GPSSensor(const char *const pcName, int n_queues = 3)
-	: Sensor(pcName, n_queues) {
-    	_location = LocationData {
-    		0, 0, 0
-    	};
-    	setup();
+    GPSSensor(const char *const pcName)
+	: Sensor(pcName) {
+    	
     }
 
     virtual ~GPSSensor() {
@@ -132,9 +129,22 @@ public:
 		debugI("GPS started");
     }
 
+	void begin(unsigned long read_delay, int read_priority) {
+        _location = LocationData {
+    		0, 0, 0
+    	};
+    	setup();
+
+        Sensor::begin(read_delay, read_priority);
+    }
+
 	LocationData getLocation() {
 		return _location;
 	}
+
+	void stop() {
+        Sensor::stop();
+    }
 };
 
 

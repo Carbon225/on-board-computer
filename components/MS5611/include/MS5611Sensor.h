@@ -83,15 +83,12 @@ protected:
 	}
 
 public:
-    MS5611Sensor(const char *const pcName, int n_queues = 5)
-    : Sensor(pcName, n_queues), MS5611() {
-		/*
-			int count = 10;
-			for (;count > 0; count--) {
-				debugW("Starting MS in %d", count);
-				vTaskDelay(1000 / portTICK_PERIOD_MS);
-			}
-		*/
+    MS5611Sensor(const char *const pcName)
+    : Sensor(pcName), MS5611() {
+		
+    }
+
+	void begin(unsigned long read_delay, int read_priority) {
         debugD("Starting MS");
 
 		if (i2c_mutex != NULL) {
@@ -112,20 +109,7 @@ public:
 			Sensor::sendToQueues(ErrorTypeToElement(ErrorTypes::SemaphoreNULL));
 		}
 
-        /*
-			// get ground level pressure
-			if (i2c_mutex != NULL) {
-				if (xSemaphoreTake(i2c_mutex, 10 / portTICK_PERIOD_MS)) {
-					double _referencePressure = MS5611::readPressure();
-
-					xSemaphoreGive(i2c_mutex);
-				} else {
-					Sensor::sendToQueues(ErrorTypeToElement(ErrorTypes::I2CBlocked));
-				}
-			} else {
-				Sensor::sendToQueues(ErrorTypeToElement(ErrorTypes::SemaphoreNULL));
-			}
-        */
+        Sensor::begin(read_delay, read_priority);
     }
 
     // in meters
@@ -134,6 +118,10 @@ public:
     	// double altitude = MS5611::getAltitude(pressure);
 
     	return (unsigned int) 0;
+    }
+
+	void stop() {
+        Sensor::stop();
     }
 };
 

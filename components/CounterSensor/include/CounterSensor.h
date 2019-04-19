@@ -32,8 +32,8 @@ protected:
     }
 
 public:
-    CounterSensor(const char *const pcName, int n_queues = 5)
-    : Sensor(pcName, n_queues) {
+    CounterSensor(const char *const pcName)
+    : Sensor(pcName) {
         m_value = 0;
     }
 };

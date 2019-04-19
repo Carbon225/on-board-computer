@@ -36,10 +36,11 @@ private:
     // name of read task
     const char *const m_pcName;
 
+    static const int m_maxQueues = 2;
+
     // array of used queues (where we store data)
-    DataQueue::Queue **m_queues;
+    DataQueue::Queue *m_queues[m_maxQueues];
     int m_nQueues = 0;
-    const int m_maxQueues;
 
     // how often to read
     int m_read_delay;
@@ -56,13 +57,12 @@ protected:
     }
 
 public:
-    Sensor(const char *const pcName, int n_queues)
+    Sensor(const char *const pcName)
         : m_pcName(pcName),
-          m_maxQueues(n_queues),
 		  m_read_delay(1000)
     {
         // create array of DataQueue::Queue pointers
-        m_queues = new DataQueue::Queue *[n_queues];
+        // m_queues = new DataQueue::Queue *[n_queues];
     }
 
     virtual ~Sensor() {
@@ -71,11 +71,20 @@ public:
     		vTaskDelete(_readTaskHandle);
 
         // important to avoid memory leaks
-        delete [] m_queues;
+        // delete [] m_queues;
+    }
+    
+    void stop() {
+        // stop reading sensor
+    	if (_readTaskHandle != NULL)
+    		vTaskDelete(_readTaskHandle);
     }
 
     // call before begin() to subscribe sensor to a queue (it will use to for data storage)
     void addQueue(DataQueue::Queue *queue) {
+        if (m_nQueues >= m_maxQueues)
+            return;
+
         m_queues[m_nQueues] = queue;
         m_nQueues++;
     }

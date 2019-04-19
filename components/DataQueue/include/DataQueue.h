@@ -142,10 +142,14 @@ namespace DataQueue {
 		FlushFunctionParams m_params;
 
     public:
-        Queue(int size) {
+        Queue() {
             // create queue storing QueueElements
-            m_queue = xQueueCreate(size, sizeof(QueueElement));
+            // m_queue = xQueueCreate(size, sizeof(QueueElement));
         }
+
+		void begin(int size) {
+			m_queue = xQueueCreate(size, sizeof(QueueElement));
+		}
 
         ~Queue() {
         	if (m_flushFunction != NULL)

@@ -40,10 +40,13 @@ protected:
     }
 
 public:
-    PMS5003Sensor(uart_port_t uart_num, gpio_num_t rx, gpio_num_t tx,
-    			  const char *const pcName, int n_queues = 5)
-	: Sensor(pcName, n_queues),
-	  m_uart_num(uart_num) {
+    PMS5003Sensor(uart_port_t uart_num,
+    			  const char *const pcName)
+	: Sensor(pcName), m_uart_num(uart_num) {
+        
+    }
+
+	void begin(unsigned long read_delay, int read_priority, gpio_num_t rx, gpio_num_t tx) {
         printf("Starting PMS5003...\n");
 		debugD("Starting PMS5003...\n");
 
@@ -69,11 +72,18 @@ public:
 		uart_wait_tx_done(m_uart_num, 100);
 
 		debugI("PMS5003 started\n");
+
+        Sensor::begin(read_delay, read_priority);
     }
 
     virtual ~PMS5003Sensor() {
     	uart_driver_delete(m_uart_num);
     }
+
+	void stop() {
+		uart_driver_delete(m_uart_num);
+		Sensor::stop();
+	}
 
 	// combine 2 bytes into number
     static uint16_t bytes2Int(uint8_t *data) {

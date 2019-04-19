@@ -29,13 +29,13 @@
 
 #define SAFE_MODE_PIN 13
 
-DHT22Sensor *dht22; // (GPIO_NUM_4, "DHTn1");
-PMS5003Sensor *pms5003;
+DHT22Sensor dht22("dht"); // (GPIO_NUM_4, "DHTn1");
+PMS5003Sensor pms5003(UART_NUM_2, "pms");
 MPUHAL *mpu6050;
-RadioHAL *radio;
-MS5611Sensor *ms5611;
-TMP102Sensor *tmp102;
-GPSSensor *gps;
+RadioHAL radio;
+MS5611Sensor ms5611("ms");
+TMP102Sensor tmp102("tmp");
+GPSSensor gps("gps");
 
 // mutex semaphore to make sure only one task at a time can use i2c and radio
 SemaphoreHandle_t i2c_mutex = NULL;
@@ -43,7 +43,7 @@ SemaphoreHandle_t lora_mutex = NULL;
 
 // main data queue for sending data over radio
 // DataQueue::Queue sendQueue(128);
-DataQueue::Queue *sendQueue;
+DataQueue::Queue sendQueue;
 
 
 int counter = 0;
@@ -61,7 +61,7 @@ void loopTask(void *ignore) {
 			.time = (uint16_t) (millis() / 1000)
         };
 
-        sendQueue->add(&element);
+        sendQueue.add(&element);
         counter++;
 
 		// debugD("Counter added to queue");
@@ -122,7 +122,7 @@ void queueDataParser(QueueHandle_t queue) {
 	}*/
 
 	if (packet_size > 1)
-		radio->send(packet);
+		radio.send(packet);
 
 	debugD("%d free space", uxTaskGetStackHighWaterMark(NULL));
 }
@@ -177,11 +177,11 @@ namespace Startup {
 		// asynchronously start a sensor
 		xTaskCreate([](void*){
 			// start sensor with constructor
-			dht22 = new DHT22Sensor(GPIO_NUM_4, "DHTn1");
+			// dht22 = new DHT22Sensor(GPIO_NUM_4, "DHTn1");
 			// tell it to save to sendQueue
-			dht22 -> addQueue(sendQueue);
+			dht22.addQueue(&sendQueue);
 			// start the sensor class (reading every 1500 ms, task priority 3)
-			dht22 -> begin(1500, 3);
+			dht22.begin(1500, 3, GPIO_NUM_4);
 
 			debugD("%d free space DHT", uxTaskGetStackHighWaterMark(NULL));
 
@@ -191,9 +191,8 @@ namespace Startup {
 
 	void startTMP() {
 		xTaskCreate([](void*){
-			tmp102 = new TMP102Sensor("TMPn1");
-			tmp102 -> addQueue(sendQueue);
-			tmp102 -> Sensor::begin(900, 4);
+			tmp102.addQueue(&sendQueue);
+			tmp102.begin(900, 4);
 
 			debugD("%d free space TMP", uxTaskGetStackHighWaterMark(NULL));
 
@@ -203,9 +202,8 @@ namespace Startup {
 
 	void startMS() {
 		xTaskCreate([](void*){
-			ms5611 = new MS5611Sensor("MSn1");
-			ms5611 -> addQueue(sendQueue);
-			ms5611 -> Sensor::begin(100, 5);
+			ms5611.addQueue(&sendQueue);
+			ms5611.begin(100, 5);
 
 			debugD("%d free space MS", uxTaskGetStackHighWaterMark(NULL));
 
@@ -216,7 +214,7 @@ namespace Startup {
 	void startMPU() {
 		xTaskCreate([](void*){
 			mpu6050 = new MPUHAL("mpun1");
-			mpu6050->addQueue(sendQueue);
+			mpu6050->addQueue(&sendQueue);
 			mpu6050->begin(1000, 3);
 
 			debugD("%d free space MPU", uxTaskGetStackHighWaterMark(NULL));
@@ -227,10 +225,8 @@ namespace Startup {
 
 	void startPMS() {
 		xTaskCreate([](void*){
-			pms5003 = new PMS5003Sensor(UART_NUM_2, GPIO_NUM_17, GPIO_NUM_16, "pms5003");
-			// pms5003 = new PMS5003Sensor(UART_NUM_2, GPIO_NUM_16, GPIO_NUM_17, "pms5003");
-			pms5003->addQueue(sendQueue);
-			pms5003->begin(2000, 3);
+			pms5003.addQueue(&sendQueue);
+			pms5003.begin(2000, 3, GPIO_NUM_17, GPIO_NUM_16);
 
 			debugD("%d free space PMS", uxTaskGetStackHighWaterMark(NULL));
 
@@ -240,9 +236,8 @@ namespace Startup {
 
 	void startGPS() {
 		xTaskCreate([](void*){
-			gps = new GPSSensor("GPSSensor");
-			gps -> addQueue(sendQueue);
-			gps -> Sensor::begin(3000, 3);
+			gps.addQueue(&sendQueue);
+			gps.begin(3000, 3);
 
 			debugD("%d free space GPS", uxTaskGetStackHighWaterMark(NULL));
 
@@ -281,11 +276,11 @@ extern "C" void app_main() {
 	lora_mutex = xSemaphoreCreateMutex();
 	i2c_mutex = xSemaphoreCreateMutex();
 
-	sendQueue = new DataQueue::Queue(256);
+	sendQueue.begin(256);
 
 	// start the radio
-	radio = new RadioHAL(12, -1, 22);
-	radio->begin(4346E5); // 434.6 MHz
+	// radio = new RadioHAL(12, -1, 22);
+	radio.begin(12, -1, 22, 4346E5); // 434.6 MHz
 
 #ifdef RECEIVER // is receiver
 	// startOTA();
@@ -367,10 +362,10 @@ extern "C" void app_main() {
 	#endif
 
 	// start flushing the queue
-	sendQueue->setFlushFunction(queueDataParser, 1300, "sendQueue", 4);
+	sendQueue.setFlushFunction(queueDataParser, 1300, "sendQueue", 4);
 
 	// start receiving data from ground station
-	radio->startReceive(Cansat::onReceive);
+	radio.startReceive(Cansat::onReceive);
 
 #endif // RECEIVER
 

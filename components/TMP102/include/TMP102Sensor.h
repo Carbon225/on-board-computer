@@ -65,9 +65,13 @@ protected:
 		}
 	}
 public:
-	TMP102Sensor(const char *const pcName, int n_queues = 2)
-	: Sensor(pcName, n_queues), TMP102(0x48) {
-		debugD("Starting TMP...\n");
+	TMP102Sensor(const char *const pcName)
+	: Sensor(pcName), TMP102(0x48) {
+		
+	}
+
+	void begin(unsigned long read_delay, int read_priority) {
+        debugD("Starting TMP...\n");
 
 		if (i2c_mutex != NULL) {
 			// wait for i2c semaphore to start sensor
@@ -117,7 +121,13 @@ public:
 			debugE("TMP start semaphore null");
 			Sensor::sendToQueues(ErrorTypeToElement(ErrorTypes::SemaphoreNULL));
 		}
-	}
+
+        Sensor::begin(read_delay, read_priority);
+    }
+
+	void stop() {
+        Sensor::stop();
+    }
 };
 
 
