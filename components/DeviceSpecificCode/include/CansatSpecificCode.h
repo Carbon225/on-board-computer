@@ -10,12 +10,12 @@
 
 // created in main
 extern RemoteDebug Debug;
-extern DHT22Sensor *dht22; // (GPIO_NUM_4, "DHTn1");
-extern PMS5003Sensor *pms5003;
+extern DHT22Sensor dht22; // (GPIO_NUM_4, "DHTn1");
+extern PMS5003Sensor pms5003;
 extern MPUHAL *mpu6050;
-extern MS5611Sensor *ms5611;
-extern TMP102Sensor *tmp102;
-extern GPSSensor *gps;
+extern MS5611Sensor ms5611;
+extern TMP102Sensor tmp102;
+extern GPSSensor gps;
 
 namespace Cansat {
 
@@ -31,11 +31,8 @@ namespace Cansat {
 			debugW("Shutting down sensors");
 
 			// shutdown all sensors except the GPS
-			delete dht22;
-			delete pms5003;
-			delete mpu6050;
-			delete ms5611;
-			delete tmp102;
+			dht22.stop();
+			
 
 			debugW("Going to sleep");
 
@@ -78,7 +75,7 @@ namespace Cansat {
 			xLastWakeTime = xTaskGetTickCount();
 
 			// unsigned int alt = ms5611->getAltitide();
-			unsigned int alt = gps->getLocation().alt;
+			unsigned int alt = gps.getLocation().alt;
 
 			// filter bad readings
 			if (alt > 50 && alt < 6000) {

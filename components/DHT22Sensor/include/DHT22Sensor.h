@@ -39,12 +39,20 @@ protected:
     }
 
 public:
-    DHT22Sensor(gpio_num_t pin, const char *const pcName, int n_queues = 5)
-        : Sensor(pcName, n_queues), DHT()
+    DHT22Sensor(const char *const pcName)
+        : Sensor(pcName), DHT()
     {
+        
+    }
+
+    void start(gpio_num_t pin) {
         // printf("Starting DHT...\n");
         debugI("Starting DHT...\n");
         DHT::setDHTgpio(pin);
+    }
+
+    void stop() {
+        Sensor::stop();
     }
 };
 

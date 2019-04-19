@@ -16,7 +16,7 @@
 
 extern RemoteDebug Debug;
 extern SemaphoreHandle_t lora_mutex;
-extern DataQueue::Queue *sendQueue;
+extern DataQueue::Queue sendQueue;
 
 
 class RadioHAL {
@@ -26,12 +26,14 @@ private:
 	bool _started = false;
 
 public:
-	RadioHAL(int cs, int rst, int dio0) {
-		LoRa.setPins(cs, rst, dio0);
+	RadioHAL() {
+		// LoRa.setPins(cs, rst, dio0);
 	}
 
-	void begin(long freq) {
+	void begin(int cs, int rst, int dio0, long freq) {
 		ESP_LOGI(m_TAG, "Starting radio");
+		
+		LoRa.setPins(cs, rst, dio0);
 		if (!LoRa.begin(freq)) {
 			ESP_LOGE(m_TAG, "Starting LoRa failed!");
 		} else {
@@ -103,11 +105,11 @@ public:
 					debugD("Packet sent in %d ms, late by %d ms", transmission_time, send_delay);
 				} else {
 					DataQueue::QueueElement error = ErrorTypeToElement(ErrorTypes::LoraBlocked);
-					sendQueue->add(&error);
+					sendQueue.add(&error);
 				}
 			} else {
 				DataQueue::QueueElement error = ErrorTypeToElement(ErrorTypes::SemaphoreNULL);
-				sendQueue->add(&error);
+				sendQueue.add(&error);
 			}
 		}
 	}

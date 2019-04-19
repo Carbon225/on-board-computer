@@ -213,8 +213,8 @@ protected:
     }
 
 public:
-    MPUHAL(const char *const pcName, int n_queues = 5)
-        : Sensor(pcName, n_queues), MPU_t()
+    MPUHAL(const char *const pcName)
+        : Sensor(pcName), MPU_t()
     {
     	if (n_mpus > 0) {
     		ESP_LOGE(m_TAG, "Maximum number of MPUs reached");
