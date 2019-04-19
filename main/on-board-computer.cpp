@@ -175,7 +175,7 @@ namespace Startup {
 
 	void startDHT() {
 		// asynchronously start a sensor
-		xTaskCreate([](void*){
+		/*xTaskCreate([](void*){
 			// start sensor with constructor
 			// dht22 = new DHT22Sensor(GPIO_NUM_4, "DHTn1");
 			// tell it to save to sendQueue
@@ -186,33 +186,45 @@ namespace Startup {
 			debugD("%d free space DHT", uxTaskGetStackHighWaterMark(NULL));
 
 			vTaskDelete(NULL);
-		}, "startDHT", 3*1024, NULL, 3, NULL);
+		}, "startDHT", 3*1024, NULL, 3, NULL);*/
+		dht22.addQueue(&sendQueue);
+		dht22.Sensor::begin(1500, 3, [](){
+			dht22.start(GPIO_NUM_4);
+		});
 	}
 
 	void startTMP() {
-		xTaskCreate([](void*){
+		/*xTaskCreate([](void*){
 			tmp102.addQueue(&sendQueue);
 			tmp102.begin(900, 4);
 
 			debugD("%d free space TMP", uxTaskGetStackHighWaterMark(NULL));
 
 			vTaskDelete(NULL);
-		}, "startTMP", 3*1024, NULL, 3, NULL);
+		}, "startTMP", 3*1024, NULL, 3, NULL);*/
+		tmp102.addQueue(&sendQueue);
+		tmp102.Sensor::begin(900, 4, [](){
+			tmp102.start();
+		});
 	}
 
 	void startMS() {
-		xTaskCreate([](void*){
+		/*xTaskCreate([](void*){
 			ms5611.addQueue(&sendQueue);
 			ms5611.begin(100, 5);
 
 			debugD("%d free space MS", uxTaskGetStackHighWaterMark(NULL));
 
 			vTaskDelete(NULL);
-		}, "startMS", 3*1024, NULL, 3, NULL);
+		}, "startMS", 3*1024, NULL, 3, NULL);*/
+		ms5611.addQueue(&sendQueue);
+		ms5611.Sensor::begin(100, 5, [](){
+			ms5611.start();
+		});
 	}
 
 	void startMPU() {
-		xTaskCreate([](void*){
+		/*xTaskCreate([](void*){
 			mpu6050 = new MPUHAL("mpun1");
 			mpu6050->addQueue(&sendQueue);
 			mpu6050->begin(1000, 3);
@@ -220,29 +232,37 @@ namespace Startup {
 			debugD("%d free space MPU", uxTaskGetStackHighWaterMark(NULL));
 
 			vTaskDelete(NULL);
-		}, "startMPU", 3*1024, NULL, 3, NULL);
+		}, "startMPU", 3*1024, NULL, 3, NULL);*/
 	}
 
 	void startPMS() {
-		xTaskCreate([](void*){
+		/*xTaskCreate([](void*){
 			pms5003.addQueue(&sendQueue);
 			pms5003.begin(2000, 3, GPIO_NUM_17, GPIO_NUM_16);
 
 			debugD("%d free space PMS", uxTaskGetStackHighWaterMark(NULL));
 
 			vTaskDelete(NULL);
-		}, "startPMS", 3*1024, NULL, 3, NULL);
+		}, "startPMS", 3*1024, NULL, 3, NULL);*/
+		pms5003.addQueue(&sendQueue);
+		pms5003.Sensor::begin(2000, 3, [](){
+			pms5003.start(GPIO_NUM_17, GPIO_NUM_16);
+		});
 	}
 
 	void startGPS() {
-		xTaskCreate([](void*){
+		/*xTaskCreate([](void*){
 			gps.addQueue(&sendQueue);
 			gps.begin(3000, 3);
 
 			debugD("%d free space GPS", uxTaskGetStackHighWaterMark(NULL));
 
 			vTaskDelete(NULL);
-		}, "startGPS", 3*1024, NULL, 3, NULL);
+		}, "startGPS", 3*1024, NULL, 3, NULL);*/
+		gps.addQueue(&sendQueue);
+		gps.Sensor::begin(3000, 3, [](){
+			gps.start();
+		});
 	}
 
 	void startSD() {

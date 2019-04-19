@@ -129,13 +129,11 @@ public:
 		debugI("GPS started");
     }
 
-	void begin(unsigned long read_delay, int read_priority) {
+	void start() {
         _location = LocationData {
     		0, 0, 0
     	};
     	setup();
-
-        Sensor::begin(read_delay, read_priority);
     }
 
 	LocationData getLocation() {

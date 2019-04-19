@@ -70,7 +70,7 @@ public:
 		
 	}
 
-	void begin(unsigned long read_delay, int read_priority) {
+	void start() {
         debugD("Starting TMP...\n");
 
 		if (i2c_mutex != NULL) {
@@ -121,8 +121,6 @@ public:
 			debugE("TMP start semaphore null");
 			Sensor::sendToQueues(ErrorTypeToElement(ErrorTypes::SemaphoreNULL));
 		}
-
-        Sensor::begin(read_delay, read_priority);
     }
 
 	void stop() {

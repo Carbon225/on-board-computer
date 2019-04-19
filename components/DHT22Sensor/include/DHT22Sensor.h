@@ -45,12 +45,10 @@ public:
         
     }
 
-    void begin(unsigned long read_delay, int read_priority, gpio_num_t pin) {
+    void start(gpio_num_t pin) {
         // printf("Starting DHT...\n");
         debugI("Starting DHT...\n");
         DHT::setDHTgpio(pin);
-
-        Sensor::begin(read_delay, read_priority);
     }
 
     void stop() {

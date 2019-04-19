@@ -46,7 +46,7 @@ public:
         
     }
 
-	void begin(unsigned long read_delay, int read_priority, gpio_num_t rx, gpio_num_t tx) {
+	void start(gpio_num_t rx, gpio_num_t tx) {
         printf("Starting PMS5003...\n");
 		debugD("Starting PMS5003...\n");
 
@@ -72,8 +72,6 @@ public:
 		uart_wait_tx_done(m_uart_num, 100);
 
 		debugI("PMS5003 started\n");
-
-        Sensor::begin(read_delay, read_priority);
     }
 
     virtual ~PMS5003Sensor() {

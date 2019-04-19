@@ -18,7 +18,7 @@ private:
         // unpack pointer to current sensor object
         Sensor *sensor = (Sensor*) pvParameters;
 
-        // sensor->m_beginSensor;
+        sensor->m_beginSensor();
 
         TickType_t xLastWakeTime;
         for (;;) {
@@ -97,9 +97,9 @@ public:
     }
 
     // start reading the sensor and storing data
-    void begin(unsigned long read_delay, int read_priority) {
+    void begin(unsigned long read_delay, int read_priority, beginSensor_fn beginSensor) {
         m_read_delay = read_delay;
-        // m_beginSensor = beginSensor;
+        m_beginSensor = beginSensor;
 
         // pass this pointer to the static function
         xTaskCreate(genericSensorReadTask, m_pcName, 8*1024, this, read_priority, &_readTaskHandle);
