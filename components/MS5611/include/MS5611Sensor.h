@@ -29,12 +29,13 @@ protected:
 			if (i2c_mutex != NULL) {
 				
 				int count = 0;
-				while (!xSemaphoreTake(i2c_mutex, 10 / portTICK_PERIOD_MS)) {
+				while (!xSemaphoreTake(i2c_mutex, 0 / portTICK_PERIOD_MS)) {
 					if (count > 10) {
 						debugE("MS I2C blocked");
 						Sensor::sendToQueues(ErrorTypeToElement(ErrorTypes::I2CBlocked));
 					}
 					count++;
+					vTaskDelay(10 / portTICK_PERIOD_MS);
 				}
 				
 				// try to get i2c semaphore
