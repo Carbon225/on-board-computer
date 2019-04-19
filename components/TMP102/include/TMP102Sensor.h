@@ -26,9 +26,9 @@ protected:
 		if (_started) {
 			if (i2c_mutex != NULL) {
 				//  wait for i2c semaphore
-				while (!xSemaphoreTake(i2c_mutex, 50 / portTICK_PERIOD_MS)) {
+				while (!xSemaphoreTake(i2c_mutex, 15 / portTICK_PERIOD_MS)) {
 					// debugE("TMP I2C blocked");
-					Sensor::sendToQueues(ErrorTypeToElement(ErrorTypes::I2CBlocked));
+					// Sensor::sendToQueues(ErrorTypeToElement(ErrorTypes::I2CBlocked));
 				}
 
 				// read sensor and give back semaphore

@@ -133,12 +133,12 @@ void queueDataParser(QueueHandle_t queue) {
 
 // #define ENABLE_COUNTER
 #define ENABLE_DHT
-#define ENABLE_TMP
-// #define ENABLE_MS
+// #define ENABLE_TMP
+#define ENABLE_MS
 // #define ENABLE_MPU
-// #define ENABLE_PMS
+#define ENABLE_PMS
 // #define ENABLE_GPS
-// #define ENABLE_SD
+#define ENABLE_SD
 // #define ENABLE_SERVO
 // #define TEST_SERVO
 
@@ -218,7 +218,7 @@ namespace Startup {
 			vTaskDelete(NULL);
 		}, "startMS", 3*1024, NULL, 3, NULL);*/
 		ms5611.addQueue(&sendQueue);
-		ms5611.Sensor::begin(100, 5, [](){
+		ms5611.Sensor::begin(150, 5, [](){
 			ms5611.start();
 		});
 	}
@@ -283,7 +283,7 @@ extern "C" void app_main() {
 	// initialize the arduino component
 	initArduino();
 	pinMode(SAFE_MODE_PIN, INPUT_PULLUP);
-	// Serial.begin(115200);
+	Serial.begin(115200);
 
 	// check the safe mode pin and enter safe mode if needed
 	if (digitalRead(SAFE_MODE_PIN) == LOW) {
@@ -385,7 +385,7 @@ extern "C" void app_main() {
 	sendQueue.setFlushFunction(queueDataParser, 1300, "sendQueue", 4);
 
 	// start receiving data from ground station
-	radio.startReceive(Cansat::onReceive);
+	// radio.startReceive(Cansat::onReceive);
 
 #endif // RECEIVER
 

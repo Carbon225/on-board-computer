@@ -34,7 +34,7 @@ protected:
 					}
 				*/
 				// try to get i2c semaphore
-				if  (xSemaphoreTake(i2c_mutex, 50 / portTICK_PERIOD_MS)) {
+				if  (xSemaphoreTake(i2c_mutex, 10 / portTICK_PERIOD_MS)) {
 					// debugD("Reading MS");
 					double realTemperature = MS5611::getTemperature() / 100;
 					int32_t realPressure = MS5611::getPressure();
@@ -93,7 +93,7 @@ public:
 
 		if (i2c_mutex != NULL) {
 			// wait for i2c semaphore
-			while (!xSemaphoreTake(i2c_mutex, 100 / portTICK_PERIOD_MS)) {
+			while (!xSemaphoreTake(i2c_mutex, 10 / portTICK_PERIOD_MS)) {
 				// debugE("MS start I2C blocked");
 				// Sensor::sendToQueues(ErrorTypeToElement(ErrorTypes::I2CBlocked));
 			}
