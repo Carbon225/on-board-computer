@@ -6,6 +6,7 @@
 #include "freertos/task.h"
 #include "esp_err.h"
 #include "esp_log.h"
+#include "esp_wifi.h"
 
 #include "WiFi.h"
 #include "WiFiClient.h"
@@ -45,6 +46,7 @@ namespace OTAService {
 	// start OTA with telnet
     void testBegin(const char *host) {
     	// Connect to WiFi network
+		WiFi.mode(WIFI_STA);
 		WiFi.begin(ssid, password);
 		Serial.println("");
 
@@ -52,6 +54,8 @@ namespace OTAService {
 		while (WiFi.status() != WL_CONNECTED) {
 			delay(500);
 			Serial.print(".");
+			delay(3000);
+			break;
 		}
 		Serial.println("");
 		Serial.print("Connected to ");
@@ -124,6 +128,7 @@ namespace OTAService {
 	// OTA without telnet
     void beginBasic(const char *host) {
     	// Connect to WiFi network
+		WiFi.mode(WIFI_STA);
 		WiFi.begin(ssid, password);
 		Serial.println("");
 
@@ -131,6 +136,8 @@ namespace OTAService {
 		while (WiFi.status() != WL_CONNECTED) {
 			delay(500);
 			Serial.print(".");
+			delay(3000);
+			break;
 		}
 		Serial.println("");
 		Serial.print("Connected to ");

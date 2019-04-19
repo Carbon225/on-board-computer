@@ -99,7 +99,7 @@ public:
 
 		if (i2c_mutex != NULL) {
 			// wait for i2c semaphore
-			while (!xSemaphoreTake(i2c_mutex, 100 / portTICK_PERIOD_MS)) {
+			while (!xSemaphoreTake(i2c_mutex, 10 / portTICK_PERIOD_MS)) {
 				// debugE("MS start I2C blocked");
 				// Sensor::sendToQueues(ErrorTypeToElement(ErrorTypes::I2CBlocked));
 			}
