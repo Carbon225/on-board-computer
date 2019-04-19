@@ -54,12 +54,12 @@ private:
 						debugV("Da time is %u:%u", gpsSensor->time.hour(), gpsSensor->time.minute());
 
 						// update local RTC
-						struct timeval tv;
+						/*struct timeval tv;
 						tv.tv_sec = gpsSensor->time.value();
 						settimeofday(&tv, NULL);
-						debugV("Set system time to %ld", ::time(NULL));
+						debugV("Set system time to %ld", ::time(NULL));*/
 					} else {
-						debugE("Location invalid");
+						debugE("Time invalid");
 					}
 				}
 			}
