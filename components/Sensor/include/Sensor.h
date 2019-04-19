@@ -6,6 +6,8 @@
 
 #include "DataQueue.h"
 
+typedef void (*beginSensor_fn)();
+
 class Sensor {
 private:
 	TaskHandle_t _readTaskHandle = NULL;
@@ -15,6 +17,8 @@ private:
     static void genericSensorReadTask(void *pvParameters) {
         // unpack pointer to current sensor object
         Sensor *sensor = (Sensor*) pvParameters;
+
+        // sensor->m_beginSensor;
 
         TickType_t xLastWakeTime;
         for (;;) {
@@ -35,6 +39,9 @@ private:
 
     // name of read task
     const char *const m_pcName;
+
+    // function to start the hardware sensor
+    beginSensor_fn m_beginSensor = NULL;
 
     static const int m_maxQueues = 2;
 
@@ -92,6 +99,7 @@ public:
     // start reading the sensor and storing data
     void begin(unsigned long read_delay, int read_priority) {
         m_read_delay = read_delay;
+        // m_beginSensor = beginSensor;
 
         // pass this pointer to the static function
         xTaskCreate(genericSensorReadTask, m_pcName, 8*1024, this, read_priority, &_readTaskHandle);
