@@ -118,7 +118,7 @@ namespace OTAService {
 		});
 
 		server.begin();
-        xTaskCreate(OTATask, "OTATask", 1024*8, NULL, 2, NULL);
+        xTaskCreate(OTATask, "OTATask", 1024*16, NULL, 2, NULL);
     }
 
 	// OTA without telnet
@@ -188,7 +188,7 @@ namespace OTAService {
 		});
 
 		server.begin();
-        xTaskCreate(OTATask, "OTATask", 1024*8, NULL, 2, NULL);
+        xTaskCreate(OTATask, "OTATask", 1024*16, NULL, 2, NULL);
     }
 
     void loop() {

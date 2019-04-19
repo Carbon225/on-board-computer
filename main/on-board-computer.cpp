@@ -131,13 +131,13 @@ void queueDataParser(QueueHandle_t queue) {
 
 // #define RECEIVER
 
-#define ENABLE_COUNTER
+// #define ENABLE_COUNTER
 #define ENABLE_DHT
 #define ENABLE_TMP
-#define ENABLE_MS
+// #define ENABLE_MS
 // #define ENABLE_MPU
 // #define ENABLE_PMS
-#define ENABLE_GPS
+// #define ENABLE_GPS
 // #define ENABLE_SD
 // #define ENABLE_SERVO
 // #define TEST_SERVO
@@ -186,7 +186,7 @@ namespace Startup {
 			debugD("%d free space DHT", uxTaskGetStackHighWaterMark(NULL));
 
 			vTaskDelete(NULL);
-		}, "startDHT", 1*1024, NULL, 3, NULL);
+		}, "startDHT", 3*1024, NULL, 3, NULL);
 	}
 
 	void startTMP() {
@@ -198,7 +198,7 @@ namespace Startup {
 			debugD("%d free space TMP", uxTaskGetStackHighWaterMark(NULL));
 
 			vTaskDelete(NULL);
-		}, "startTMP", 2*1024, NULL, 3, NULL);
+		}, "startTMP", 3*1024, NULL, 3, NULL);
 	}
 
 	void startMS() {
@@ -210,7 +210,7 @@ namespace Startup {
 			debugD("%d free space MS", uxTaskGetStackHighWaterMark(NULL));
 
 			vTaskDelete(NULL);
-		}, "startMS", 2*1024, NULL, 3, NULL);
+		}, "startMS", 3*1024, NULL, 3, NULL);
 	}
 
 	void startMPU() {
@@ -222,7 +222,7 @@ namespace Startup {
 			debugD("%d free space MPU", uxTaskGetStackHighWaterMark(NULL));
 
 			vTaskDelete(NULL);
-		}, "startMPU", 1*1024, NULL, 3, NULL);
+		}, "startMPU", 3*1024, NULL, 3, NULL);
 	}
 
 	void startPMS() {
@@ -235,7 +235,7 @@ namespace Startup {
 			debugD("%d free space PMS", uxTaskGetStackHighWaterMark(NULL));
 
 			vTaskDelete(NULL);
-		}, "startPMS", 1*1024, NULL, 3, NULL);
+		}, "startPMS", 3*1024, NULL, 3, NULL);
 	}
 
 	void startGPS() {
@@ -247,7 +247,7 @@ namespace Startup {
 			debugD("%d free space GPS", uxTaskGetStackHighWaterMark(NULL));
 
 			vTaskDelete(NULL);
-		}, "startGPS", 2*1024, NULL, 3, NULL);
+		}, "startGPS", 3*1024, NULL, 3, NULL);
 	}
 
 	void startSD() {
@@ -285,7 +285,7 @@ extern "C" void app_main() {
 
 	// start the radio
 	radio = new RadioHAL(12, -1, 22);
-	// radio->begin(4346E5); // 434.6 MHz
+	radio->begin(4346E5); // 434.6 MHz
 
 #ifdef RECEIVER // is receiver
 	// startOTA();
@@ -318,7 +318,7 @@ extern "C" void app_main() {
 	#endif
 
 	#ifdef ENABLE_COUNTER
-		xTaskCreate(loopTask, "loopTask", 1*1024, NULL, 2, NULL);
+		xTaskCreate(loopTask, "loopTask", 3*1024, NULL, 2, NULL);
 		vTaskDelay(10 / portTICK_PERIOD_MS);
 	#endif
 
@@ -356,13 +356,13 @@ extern "C" void app_main() {
 
 	#ifdef ENABLE_SERVO
 		// task will open the valve at the target altitude
-		xTaskCreate(Cansat::valveTask, "valveTask", 2*1024, NULL, 5, NULL);
+		xTaskCreate(Cansat::valveTask, "valveTask", 3*1024, NULL, 5, NULL);
 		vTaskDelay(10 / portTICK_PERIOD_MS);
 	#endif
 
 	#ifdef TEST_SERVO
 		// task for testing the valve
-		xTaskCreate(Cansat::testServoTask, "servoTest", 1024, NULL, 3, NULL);
+		xTaskCreate(Cansat::testServoTask, "servoTest", 3*1024, NULL, 3, NULL);
 		vTaskDelay(10 / portTICK_PERIOD_MS);
 	#endif
 

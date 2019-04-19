@@ -85,7 +85,7 @@ public:
         m_read_delay = read_delay;
 
         // pass this pointer to the static function
-        xTaskCreate(genericSensorReadTask, m_pcName, 4*1024, this, read_priority, &_readTaskHandle);
+        xTaskCreate(genericSensorReadTask, m_pcName, 8*1024, this, read_priority, &_readTaskHandle);
 
         // TaskManager::scheduleTask(genericSensorReadTask, m_pcName, 0, this, read_priority);
     }
