@@ -203,7 +203,7 @@ namespace Startup {
 			vTaskDelete(NULL);
 		}, "startTMP", 3*1024, NULL, 3, NULL);*/
 		tmp102.addQueue(&sendQueue);
-		tmp102.Sensor::begin(1000, 4, [](){
+		tmp102.Sensor::begin(1000, 5, [](){
 			tmp102.start();
 		});
 	}
