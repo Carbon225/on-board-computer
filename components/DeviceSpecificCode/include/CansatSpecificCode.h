@@ -67,49 +67,54 @@ namespace Cansat {
 	}
 
 	void valveTask(void*) {
-		unsigned int highest_alt = 0;
+		{	// we enclose this code in {} because vTaskDelete doesn't call destructors, just kills the task
+			unsigned int highest_alt = 0;
 
-		TickType_t xLastWakeTime;
-		while (true) {
-			xLastWakeTime = xTaskGetTickCount();
+			TickType_t xLastWakeTime;
+			while (true) {
+				xLastWakeTime = xTaskGetTickCount();
 
-			// unsigned int alt = ms5611->getAltitide();
-			unsigned int alt = gps.getLocation().alt;
+				// unsigned int alt = ms5611->getAltitide();
+				unsigned int alt = gps.getLocation().alt;
 
-			// filter bad readings (for altitude from pressure sensor)
-			if (alt > 50 && alt < 6000) {
-				// if we are 300 meters below max altitude open valve
-				if (alt > highest_alt) {
-					highest_alt = alt;
-				} else if (highest_alt - alt > 300) {
-					setValveEnable(true);
-					openValve();
-					vTaskDelay(10000 / portTICK_PERIOD_MS);
-					closeValve();
-					setValveEnable(false);
+				// filter bad readings (for altitude from pressure sensor)
+				if (alt > 50 && alt < 6000) {
+					// if we are 300 meters below max altitude open valve
+					if (alt > highest_alt) {
+						highest_alt = alt;
+					} else if (highest_alt - alt > 300) {
+						setValveEnable(true);
+						openValve();
+						vTaskDelay(10000 / portTICK_PERIOD_MS);
+						closeValve();
+						vTaskDelay(5000 / portTICK_PERIOD_MS);
+						setValveEnable(false);
 
-					// after opening and closing valve kill task
-					vTaskDelete(NULL);
+						// after opening and closing valve break and kill task
+						break;
+					}
 				}
-			}
 
-			// vTaskDelayUntil(&xLastWakeTime, 300 / portTICK_PERIOD_MS);
-			vTaskDelay(300 / portTICK_PERIOD_MS);
+				// vTaskDelayUntil(&xLastWakeTime, 300 / portTICK_PERIOD_MS);
+				vTaskDelay(300 / portTICK_PERIOD_MS);
+			}
 		}
 		vTaskDelete(NULL);
 	}
 
 	void testServoTask(void*) {
-		while (true) {
+		{	// again use {} to call destructors before vTaskDelete
 			vTaskDelay(1000 / portTICK_PERIOD_MS);
 			setValveEnable(true);
-			// debugW("Opening valve");
-			openValve();
-
-			vTaskDelay(1000 / portTICK_PERIOD_MS);
-			// debugW("Closing valve");
-			closeValve();
-			vTaskDelay(500 / portTICK_PERIOD_MS);
+			while (true) {				
+				debugW("Opening valve");
+				openValve();
+				vTaskDelay(5000 / portTICK_PERIOD_MS);
+				
+				debugW("Closing valve");
+				closeValve();
+				vTaskDelay(5000 / portTICK_PERIOD_MS);
+			}
 			setValveEnable(false);
 		}
 		vTaskDelete(NULL);
