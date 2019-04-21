@@ -212,8 +212,8 @@ void elementToJson(DataQueue::QueueElement element, char *target) {
 	char time_buf[32] = {'\0'};
 
 	// add timestamp
-	strcat(target, R"({"time":0,)");
-	// sprintf(time_buf, "%ld,", time(NULL)); // epoch time
+	strcat(target, R"({"time":)");
+	sprintf(time_buf, "%u,", element.time);
 	strcat(target, time_buf);
 
 	switch (element.type) {
