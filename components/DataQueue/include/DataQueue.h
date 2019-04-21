@@ -211,6 +211,10 @@ void elementToJson(DataQueue::QueueElement element, char *target) {
 	char buf[16] = {'\0'};
 	char time_buf[32] = {'\0'};
 
+	char lat_buf[16] = {'\0'};
+	char lng_buf[16] = {'\0'};
+	char alt_buf[16] = {'\0'};
+
 	// add timestamp
 	strcat(target, R"({"time":)");
 	sprintf(time_buf, "%u,", element.time);
@@ -295,10 +299,15 @@ void elementToJson(DataQueue::QueueElement element, char *target) {
 			break;
 
 		case DataTypes::LocationData:
-			/*strcat(target, R"("type":"Location",)");
-			sprintf(temp, R"("value":{"lat":%.3f,"lng":%.3f,"alt":%u}})",
-					element.data.locationData.lat, element.data.locationData.lng, element.data.locationData.alt);
-			strcat(target, temp);*/
+			strcat(target, R"("type":"Location",)");
+
+			dtostrf(element.data.locationData.lat, 3, 4, lat_buf);
+			dtostrf(element.data.locationData.lng, 3, 4, lng_buf);
+			dtostrf(element.data.locationData.alt, 3, 4, alt_buf);
+			
+			sprintf(temp, R"("value":{"lat":%s,"lng":%s,"alt":%s}})",
+					lat_buf, lng_buf, alt_buf);
+			strcat(target, temp);
 			break;
 
 		default:
