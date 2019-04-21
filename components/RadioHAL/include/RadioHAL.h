@@ -27,7 +27,7 @@ private:
 
 public:
 	RadioHAL() {
-		// LoRa.setPins(cs, rst, dio0);
+		
 	}
 
 	void begin(int cs, int rst, int dio0, long freq) {
@@ -95,7 +95,7 @@ public:
 					TickType_t transmission_start = xTaskGetTickCount();
 
 					LoRa.write(data, PACKET_SIZE);
-					LoRa.endPacket(false); // async
+					LoRa.endPacket(false); // not async
 
 					xSemaphoreGive(lora_mutex);
 

@@ -51,7 +51,7 @@ private:
 					}
 
 					if (gpsSensor->time.isValid()) {
-						debugV("Da time is %u:%u", gpsSensor->time.hour(), gpsSensor->time.minute());
+						debugV("The time is %u:%u", gpsSensor->time.hour(), gpsSensor->time.minute());
 
 						// update local RTC
 						/*struct timeval tv;
@@ -107,8 +107,11 @@ public:
     		vTaskDelete(_loopTaskHandle);
     }
 
-    void setup() {
-		debugD("GPS starting...");
+	void start() {
+        _location = LocationData {
+    		0, 0, 0
+    	};
+    	debugD("GPS starting...");
 
 		// serial port configuration
 		uart_config_t uart_config = {
@@ -127,13 +130,6 @@ public:
 		xTaskCreate(loopTask, "gpsLoopTask", 8*1024, (void*) this, 5, &_loopTaskHandle);
 
 		debugI("GPS started");
-    }
-
-	void start() {
-        _location = LocationData {
-    		0, 0, 0
-    	};
-    	setup();
     }
 
 	LocationData getLocation() {

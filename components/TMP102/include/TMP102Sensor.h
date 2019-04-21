@@ -81,36 +81,6 @@ public:
 			}
 		
 			TMP102::begin();
-			/*
-				// Initialize sensor0 settings
-				// These settings are saved in the sensor, even if it loses power
-
-				// set the number of consecutive faults before triggering alarm.
-				// 0-3: 0:1 fault, 1:2 faults, 2:4 faults, 3:6 faults.
-				sensor0.setFault(0);  // Trigger alarm immediately
-
-				// set the polarity of the Alarm. (0:Active LOW, 1:Active HIGH).
-				sensor0.setAlertPolarity(1); // Active HIGH
-
-				// set the sensor in Comparator Mode (0) or Interrupt Mode (1).
-				sensor0.setAlertMode(0); // Comparator Mode.
-
-				// set the Conversion Rate (how quickly the sensor gets a new reading)
-				//0-3: 0:0.25Hz, 1:1Hz, 2:4Hz, 3:8Hz
-				sensor0.setConversionRate(2);
-
-				//set Extended Mode.
-				//0:12-bit Temperature(-55C to +128C) 1:13-bit Temperature(-55C to +150C)
-				sensor0.setExtendedMode(0);
-
-				//set T_HIGH, the upper limit to trigger the alert on
-				sensor0.setHighTempF(85.0);  // set T_HIGH in F
-				//sensor0.setHighTempC(29.4); // set T_HIGH in C
-
-				//set T_LOW, the lower limit to shut turn off the alert
-				sensor0.setLowTempF(84.0);  // set T_LOW in F
-				//sensor0.setLowTempC(26.67); // set T_LOW in C
-			*/
 			TMP102::wakeup();
 
 			xSemaphoreGive(i2c_mutex);

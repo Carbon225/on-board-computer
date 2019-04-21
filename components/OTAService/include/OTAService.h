@@ -51,6 +51,7 @@ namespace OTAService {
 		Serial.println("");
 
 		// Wait for connection
+		// latest update broke this function
 		while (WiFi.status() != WL_CONNECTED) {
 			delay(500);
 			Serial.print(".");
