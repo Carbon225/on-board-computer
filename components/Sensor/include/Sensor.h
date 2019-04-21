@@ -68,17 +68,13 @@ public:
         : m_pcName(pcName),
 		  m_read_delay(1000)
     {
-        // create array of DataQueue::Queue pointers
-        // m_queues = new DataQueue::Queue *[n_queues];
+
     }
 
     virtual ~Sensor() {
     	// stop reading sensor
     	if (_readTaskHandle != NULL)
     		vTaskDelete(_readTaskHandle);
-
-        // important to avoid memory leaks
-        // delete [] m_queues;
     }
     
     void stop() {
@@ -87,7 +83,7 @@ public:
     		vTaskDelete(_readTaskHandle);
     }
 
-    // call before begin() to subscribe sensor to a queue (it will use to for data storage)
+    // call before begin() to subscribe sensor to a queue
     void addQueue(DataQueue::Queue *queue) {
         if (m_nQueues >= m_maxQueues)
             return;
@@ -101,14 +97,8 @@ public:
         m_read_delay = read_delay;
         m_beginSensor = beginSensor;
 
-        // pass this pointer to the static function
+        // pass /this/ pointer to the static function
         xTaskCreate(genericSensorReadTask, m_pcName, 8*1024, this, read_priority, &_readTaskHandle);
-
-        // TaskManager::scheduleTask(genericSensorReadTask, m_pcName, 0, this, read_priority);
-    }
-
-    void flush() {
-        // flush all data from m_queues
     }
 };
 

@@ -12,7 +12,6 @@
 extern RemoteDebug Debug;
 extern DHT22Sensor dht22; // (GPIO_NUM_4, "DHTn1");
 extern PMS5003Sensor pms5003;
-extern MPUHAL *mpu6050;
 extern MS5611Sensor ms5611;
 extern TMP102Sensor tmp102;
 extern GPSSensor gps;
@@ -77,7 +76,7 @@ namespace Cansat {
 			// unsigned int alt = ms5611->getAltitide();
 			unsigned int alt = gps.getLocation().alt;
 
-			// filter bad readings
+			// filter bad readings (for altitude from pressure sensor)
 			if (alt > 50 && alt < 6000) {
 				// if we are 300 meters below max altitude open valve
 				if (alt > highest_alt) {

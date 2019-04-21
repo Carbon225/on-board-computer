@@ -95,21 +95,11 @@ namespace SDCard {
 		*/
     }
 
-    void saveString(const char *data, const char *name, const char *flightName) {
+    void saveString(const char *data, const char *name) {
         if (!m_mounted)
             return;
 
     	char path[32] = {'\0'};
-
-    	/*sprintf(path, "/%s", flightName);
-    	if (!SD.exists(path)) {
-    		FSFunctions::createDir(SD, path);
-    	}
-
-		strcat(path, "/");
-		strcat(path, name);
-		strcat(path, ".json");*/
-
     	sprintf(path, "/%s", name);
 
 		debugV("%s -> %s", data, path);

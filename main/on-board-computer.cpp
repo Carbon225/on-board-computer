@@ -13,7 +13,6 @@
 #include "DataQueue.h"
 
 #include "DHT22Sensor.h"
-#include "MPUHAL.h"
 #include "CounterSensor.h"
 #include "PMS5003Sensor.h"
 #include "GPSSensor.h"
@@ -31,7 +30,6 @@
 
 DHT22Sensor dht22("dht"); // (GPIO_NUM_4, "DHTn1");
 PMS5003Sensor pms5003(UART_NUM_2, "pms");
-MPUHAL *mpu6050;
 RadioHAL radio;
 MS5611Sensor ms5611("ms");
 TMP102Sensor tmp102("tmp");
@@ -42,16 +40,13 @@ SemaphoreHandle_t i2c_mutex = NULL;
 SemaphoreHandle_t lora_mutex = NULL;
 
 // main data queue for sending data over radio
-// DataQueue::Queue sendQueue(128);
 DataQueue::Queue sendQueue;
-
 
 int counter = 0;
 
 // test task to see if device works
 void loopTask(void *ignore) {
     for (;;) {
-		// debugD("Ich weiss Counter");
         DataQueue::DataUnion data;
         data.intValue = counter;
 
@@ -63,10 +58,6 @@ void loopTask(void *ignore) {
 
         sendQueue.add(&element);
         counter++;
-
-		// debugD("Counter added to queue");
-
-		debugD("%d free space", uxTaskGetStackHighWaterMark(NULL));
 
         vTaskDelay(2000 / portTICK_PERIOD_MS);
     }
@@ -117,14 +108,8 @@ void queueDataParser(QueueHandle_t queue) {
 	}
 	packet[PACKET_SIZE - 1] = sum;
 
-	/*for (int i = 0; i < PACKET_SIZE; i++) {
-		printf("%x\n", packet[i]);
-	}*/
-
 	if (packet_size > 1)
 		radio.send(packet);
-
-	debugD("%d free space", uxTaskGetStackHighWaterMark(NULL));
 }
 
 // program settings
@@ -135,9 +120,8 @@ void queueDataParser(QueueHandle_t queue) {
 #define ENABLE_DHT
 #define ENABLE_TMP
 #define ENABLE_MS
-// #define ENABLE_MPU
 #define ENABLE_PMS
-// #define ENABLE_GPS
+#define ENABLE_GPS
 #define ENABLE_SD
 // #define ENABLE_SERVO
 // #define TEST_SERVO
@@ -175,18 +159,6 @@ namespace Startup {
 
 	void startDHT() {
 		// asynchronously start a sensor
-		/*xTaskCreate([](void*){
-			// start sensor with constructor
-			// dht22 = new DHT22Sensor(GPIO_NUM_4, "DHTn1");
-			// tell it to save to sendQueue
-			dht22.addQueue(&sendQueue);
-			// start the sensor class (reading every 1500 ms, task priority 3)
-			dht22.begin(1500, 3, GPIO_NUM_4);
-
-			debugD("%d free space DHT", uxTaskGetStackHighWaterMark(NULL));
-
-			vTaskDelete(NULL);
-		}, "startDHT", 3*1024, NULL, 3, NULL);*/
 		dht22.addQueue(&sendQueue);
 		dht22.Sensor::begin(1500, 3, [](){
 			dht22.start(GPIO_NUM_4);
@@ -194,14 +166,6 @@ namespace Startup {
 	}
 
 	void startTMP() {
-		/*xTaskCreate([](void*){
-			tmp102.addQueue(&sendQueue);
-			tmp102.begin(900, 4);
-
-			debugD("%d free space TMP", uxTaskGetStackHighWaterMark(NULL));
-
-			vTaskDelete(NULL);
-		}, "startTMP", 3*1024, NULL, 3, NULL);*/
 		tmp102.addQueue(&sendQueue);
 		tmp102.Sensor::begin(1000, 5, [](){
 			tmp102.start();
@@ -209,41 +173,13 @@ namespace Startup {
 	}
 
 	void startMS() {
-		/*xTaskCreate([](void*){
-			ms5611.addQueue(&sendQueue);
-			ms5611.begin(100, 5);
-
-			debugD("%d free space MS", uxTaskGetStackHighWaterMark(NULL));
-
-			vTaskDelete(NULL);
-		}, "startMS", 3*1024, NULL, 3, NULL);*/
 		ms5611.addQueue(&sendQueue);
 		ms5611.Sensor::begin(150, 5, [](){
 			ms5611.start();
 		});
 	}
 
-	void startMPU() {
-		/*xTaskCreate([](void*){
-			mpu6050 = new MPUHAL("mpun1");
-			mpu6050->addQueue(&sendQueue);
-			mpu6050->begin(1000, 3);
-
-			debugD("%d free space MPU", uxTaskGetStackHighWaterMark(NULL));
-
-			vTaskDelete(NULL);
-		}, "startMPU", 3*1024, NULL, 3, NULL);*/
-	}
-
 	void startPMS() {
-		/*xTaskCreate([](void*){
-			pms5003.addQueue(&sendQueue);
-			pms5003.begin(2000, 3, GPIO_NUM_17, GPIO_NUM_16);
-
-			debugD("%d free space PMS", uxTaskGetStackHighWaterMark(NULL));
-
-			vTaskDelete(NULL);
-		}, "startPMS", 3*1024, NULL, 3, NULL);*/
 		pms5003.addQueue(&sendQueue);
 		pms5003.Sensor::begin(2000, 3, [](){
 			pms5003.start(GPIO_NUM_17, GPIO_NUM_16);
@@ -251,14 +187,6 @@ namespace Startup {
 	}
 
 	void startGPS() {
-		/*xTaskCreate([](void*){
-			gps.addQueue(&sendQueue);
-			gps.begin(3000, 3);
-
-			debugD("%d free space GPS", uxTaskGetStackHighWaterMark(NULL));
-
-			vTaskDelete(NULL);
-		}, "startGPS", 3*1024, NULL, 3, NULL);*/
 		gps.addQueue(&sendQueue);
 		gps.Sensor::begin(3000, 3, [](){
 			gps.start();
@@ -269,10 +197,8 @@ namespace Startup {
 		xTaskCreate([](void*){
 			DataStorage::begin();
 
-			debugD("%d free space SD", uxTaskGetStackHighWaterMark(NULL));
-
 			vTaskDelete(NULL);
-		}, "startSD", 3*1024, NULL, 3, NULL);
+		}, "startSD", 4*1024, NULL, 3, NULL);
 	}
 
 } // namespace Startup
@@ -299,7 +225,6 @@ extern "C" void app_main() {
 	sendQueue.begin(256);
 
 	// start the radio
-	// radio = new RadioHAL(12, -1, 22);
 	radio.begin(12, -1, 22, 4346E5); // 434.6 MHz
 
 #ifdef RECEIVER // is receiver
@@ -361,11 +286,6 @@ extern "C" void app_main() {
 	#ifdef ENABLE_GPS
 		Startup::startGPS();
 		// small delay to offset sensor readings
-		vTaskDelay(10 / portTICK_PERIOD_MS);
-	#endif
-
-	#ifdef ENABLE_MPU
-		Startup::startMPU();
 		vTaskDelay(10 / portTICK_PERIOD_MS);
 	#endif
 

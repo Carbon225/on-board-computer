@@ -12,7 +12,7 @@
 
 extern RemoteDebug Debug;
 
-#define FORMAT_SPIFFS_IF_FAILED false
+#define FORMAT_SPIFFS_IF_FAILED true
 
 namespace SPIFFSHAL {
 
@@ -30,20 +30,20 @@ namespace SPIFFSHAL {
         m_mounted = true;
 
 		/*
-    	ESP_LOGI(m_TAG, "Testing SPIFFS");
-    	debugI("Testing SPIFFS");
-    	FSFunctions::listDir(SPIFFS, "/", 0);
-    	FSFunctions::writeFile(SPIFFS, "/hello.txt", "Hello ");
-    	FSFunctions::appendFile(SPIFFS, "/hello.txt", "World!\r\n");
-    	FSFunctions::readFile(SPIFFS, "/hello.txt");
-    	FSFunctions::renameFile(SPIFFS, "/hello.txt", "/foo.txt");
-    	FSFunctions::readFile(SPIFFS, "/foo.txt");
-    	FSFunctions::listDir(SPIFFS, "/", 0);
-    	// FSFunctions::deleteFile(SPIFFS, "/foo.txt");
-    	// FSFunctions::testFileIO(SPIFFS, "/test.txt");
-    	// FSFunctions::deleteFile(SPIFFS, "/test.txt");
-    	ESP_LOGI(m_TAG, "Test complete");
-    	debugI("Test complete");
+			ESP_LOGI(m_TAG, "Testing SPIFFS");
+			debugI("Testing SPIFFS");
+			FSFunctions::listDir(SPIFFS, "/", 0);
+			FSFunctions::writeFile(SPIFFS, "/hello.txt", "Hello ");
+			FSFunctions::appendFile(SPIFFS, "/hello.txt", "World!\r\n");
+			FSFunctions::readFile(SPIFFS, "/hello.txt");
+			FSFunctions::renameFile(SPIFFS, "/hello.txt", "/foo.txt");
+			FSFunctions::readFile(SPIFFS, "/foo.txt");
+			FSFunctions::listDir(SPIFFS, "/", 0);
+			// FSFunctions::deleteFile(SPIFFS, "/foo.txt");
+			// FSFunctions::testFileIO(SPIFFS, "/test.txt");
+			// FSFunctions::deleteFile(SPIFFS, "/test.txt");
+			ESP_LOGI(m_TAG, "Test complete");
+			debugI("Test complete");
 		*/
     }
 
@@ -52,7 +52,6 @@ namespace SPIFFSHAL {
             return;
 
 		char path[16] = {'\0'};
-
 		sprintf(path, "/%s", name);
 
 		if (!SPIFFS.exists(path)) {
