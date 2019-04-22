@@ -94,7 +94,8 @@ void queueDataParser(QueueHandle_t queue) {
 		int new_element_size = encode(element, packet + packet_size);
 
 		// if no space left in packet stop encoding
-		if (packet_size + new_element_size > PACKET_SIZE - 4) {
+		if (packet_size + new_element_size > PACKET_SIZE - 2) {
+			debugW("Packet filled");
 			break; // element was peeked so it will remain in queue
 		}
 		// if encoding finished set new packet size
@@ -181,7 +182,7 @@ namespace Startup {
 		// asynchronously start a sensor
 		dht22.addQueue(&sendQueue);
 		dht22.addQueue(&saveQueue);
-		dht22.Sensor::begin(500, 4, [](){
+		dht22.Sensor::begin(700, 4, [](){
 			dht22.start(GPIO_NUM_4);
 		});
 	}
@@ -196,7 +197,7 @@ namespace Startup {
 	void startMS() {
 		ms5611.addQueue(&sendQueue);
 		ms5611.addQueue(&saveQueue);
-		ms5611.Sensor::begin(300, 5, [](){
+		ms5611.Sensor::begin(400, 5, [](){
 			ms5611.start();
 		});
 	}
@@ -209,7 +210,7 @@ namespace Startup {
 	}
 
 	void startGPS() {
-		// gps.addQueue(&sendQueue);
+		gps.addQueue(&sendQueue);
 		gps.addQueue(&saveQueue);
 		gps.Sensor::begin(3000, 3, [](){
 			gps.start();
@@ -326,7 +327,7 @@ extern "C" void app_main() {
 	#endif
 
 	// start flushing the queue
-	sendQueue.setFlushFunction(queueDataParser, 900, "sendQueue", 4);
+	sendQueue.setFlushFunction(queueDataParser, 1400, "sendQueue", 4);
 	vTaskDelay(50 / portTICK_PERIOD_MS);
 	saveQueue.setFlushFunction(saveDataParser, 1000, "saveQueue", 3);
 
