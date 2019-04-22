@@ -41,6 +41,8 @@ SemaphoreHandle_t lora_mutex = NULL;
 
 // main data queue for sending data over radio
 DataQueue::Queue sendQueue;
+// queue for storing data on SD card
+DataQueue::Queue saveQueue;
 
 int counter = 0;
 
@@ -77,6 +79,15 @@ void queueDataParser(QueueHandle_t queue) {
 
 	// read next element
 	while (xQueuePeek(queue, &element, 0)) {
+		// don't send data other than temperature, pressure and location
+		if (element.type != DataTypes::Temperature &&
+			element.type != DataTypes::Pressure &&
+			element.type != DataTypes::LocationData) {
+				// clear element from queue
+				xQueueReceive(queue, &element, 0);
+				// read next element
+				continue;
+			}
 		logElement(element);
 
 		// try to encode and get size of encoded data
@@ -88,9 +99,6 @@ void queueDataParser(QueueHandle_t queue) {
 		}
 		// if encoding finished set new packet size
 		packet_size += new_element_size;
-
-		// save element to storage
-		DataStorage::saveElement(element);
 
 		// clear element from queue
 		xQueueReceive(queue, &element, 0);
@@ -110,6 +118,18 @@ void queueDataParser(QueueHandle_t queue) {
 
 	if (packet_size > 1)
 		radio.send(packet);
+}
+
+void saveDataParser(QueueHandle_t queue) {
+	DataQueue::QueueElement element;
+
+	// read next element
+	while (xQueueReceive(queue, &element, 0)) {
+		ESP_LOGI("saveQueue", "Saving element:");
+		logElement(element);
+		// save element to storage
+		DataStorage::saveElement(element);
+	}
 }
 
 // program settings
@@ -160,13 +180,14 @@ namespace Startup {
 	void startDHT() {
 		// asynchronously start a sensor
 		dht22.addQueue(&sendQueue);
-		dht22.Sensor::begin(1500, 3, [](){
+		dht22.addQueue(&saveQueue);
+		dht22.Sensor::begin(800, 4, [](){
 			dht22.start(GPIO_NUM_4);
 		});
 	}
 
 	void startTMP() {
-		tmp102.addQueue(&sendQueue);
+		tmp102.addQueue(&saveQueue);
 		tmp102.Sensor::begin(1000, 5, [](){
 			tmp102.start();
 		});
@@ -174,13 +195,14 @@ namespace Startup {
 
 	void startMS() {
 		ms5611.addQueue(&sendQueue);
+		ms5611.addQueue(&saveQueue);
 		ms5611.Sensor::begin(150, 5, [](){
 			ms5611.start();
 		});
 	}
 
 	void startPMS() {
-		pms5003.addQueue(&sendQueue);
+		pms5003.addQueue(&saveQueue);
 		pms5003.Sensor::begin(2000, 3, [](){
 			pms5003.start(GPIO_NUM_17, GPIO_NUM_16);
 		});
@@ -188,6 +210,7 @@ namespace Startup {
 
 	void startGPS() {
 		gps.addQueue(&sendQueue);
+		gps.addQueue(&saveQueue);
 		gps.Sensor::begin(3000, 3, [](){
 			gps.start();
 		});
@@ -223,6 +246,7 @@ extern "C" void app_main() {
 	i2c_mutex = xSemaphoreCreateMutex();
 
 	sendQueue.begin(256);
+	saveQueue.begin(256);
 
 	// start the radio
 	radio.begin(12, -1, 22, 4346E5); // 434.6 MHz
@@ -297,12 +321,14 @@ extern "C" void app_main() {
 
 	#ifdef TEST_SERVO
 		// task for testing the valve
-		xTaskCreate(Cansat::testServoTask, "servoTest", 3*1024, NULL, 3, NULL);
+		xTaskCreate(Cansat::testServoTask, "servoTest", 4*1024, NULL, 3, NULL);
 		vTaskDelay(10 / portTICK_PERIOD_MS);
 	#endif
 
 	// start flushing the queue
 	sendQueue.setFlushFunction(queueDataParser, 1300, "sendQueue", 4);
+	vTaskDelay(100 / portTICK_PERIOD_MS);
+	saveQueue.setFlushFunction(saveDataParser, 1000, "saveQueue", 3);
 
 	// start receiving data from ground station
 	// radio.startReceive(Cansat::onReceive);
