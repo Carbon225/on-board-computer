@@ -125,7 +125,7 @@ void saveDataParser(QueueHandle_t queue) {
 
 	// read next element
 	while (xQueueReceive(queue, &element, 0)) {
-		ESP_LOGI("saveQueue", "Saving element:");
+		debugI("Saving element:");
 		logElement(element);
 		// save element to storage
 		DataStorage::saveElement(element);
@@ -164,7 +164,7 @@ namespace Startup {
 			// vTaskDelay(5000 / portTICK_PERIOD_MS);
 			OTAService::testBegin(hostname);
 
-			debugD("%d free space OTA", uxTaskGetStackHighWaterMark(NULL));
+			// debugD("%d free space OTA", uxTaskGetStackHighWaterMark(NULL));
 
 			vTaskDelete(NULL);
 		}, "startOTA", 16*1024, NULL, 3, NULL);
@@ -181,7 +181,7 @@ namespace Startup {
 		// asynchronously start a sensor
 		dht22.addQueue(&sendQueue);
 		dht22.addQueue(&saveQueue);
-		dht22.Sensor::begin(800, 4, [](){
+		dht22.Sensor::begin(500, 4, [](){
 			dht22.start(GPIO_NUM_4);
 		});
 	}
@@ -196,7 +196,7 @@ namespace Startup {
 	void startMS() {
 		ms5611.addQueue(&sendQueue);
 		ms5611.addQueue(&saveQueue);
-		ms5611.Sensor::begin(150, 5, [](){
+		ms5611.Sensor::begin(100, 5, [](){
 			ms5611.start();
 		});
 	}
@@ -289,7 +289,7 @@ extern "C" void app_main() {
 	#ifdef ENABLE_MS
 		Startup::startMS();
 		// bigger delay to make MS and TMP read at different times
-		vTaskDelay(450 / portTICK_PERIOD_MS);
+		vTaskDelay(50 / portTICK_PERIOD_MS);
 	#endif
 
 	#ifdef ENABLE_TMP
@@ -326,8 +326,8 @@ extern "C" void app_main() {
 	#endif
 
 	// start flushing the queue
-	sendQueue.setFlushFunction(queueDataParser, 1300, "sendQueue", 4);
-	vTaskDelay(100 / portTICK_PERIOD_MS);
+	sendQueue.setFlushFunction(queueDataParser, 900, "sendQueue", 4);
+	vTaskDelay(50 / portTICK_PERIOD_MS);
 	saveQueue.setFlushFunction(saveDataParser, 1000, "saveQueue", 3);
 
 	// start receiving data from ground station
