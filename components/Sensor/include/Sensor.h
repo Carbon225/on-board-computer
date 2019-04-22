@@ -27,7 +27,7 @@ private:
             // send element from virtual read() to all queues
             sensor->sendToQueues(sensor->read());
 
-            debugD("%d free space", uxTaskGetStackHighWaterMark(NULL));
+            // debugD("%d free space", uxTaskGetStackHighWaterMark(NULL));
 
             // sleep
             // vTaskDelayUntil(&xLastWakeTime, sensor->m_read_delay / portTICK_PERIOD_MS);

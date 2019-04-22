@@ -124,7 +124,7 @@ namespace DataQueue {
                 params.dataParser(element);
             }*/
 
-			debugD("%d free space", uxTaskGetStackHighWaterMark(NULL));
+			// debugD("%d free space", uxTaskGetStackHighWaterMark(NULL));
 
             // sleep
 			debugD("Sleep for %d", params.flush_delay);
