@@ -45,7 +45,7 @@ struct MPUData {
 struct LocationData {
 	double lat;
 	double lng;
-	unsigned int alt;
+	uint32_t alt;
 };
 
 namespace ErrorTypes {
