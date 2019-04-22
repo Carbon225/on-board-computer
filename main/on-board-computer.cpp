@@ -94,7 +94,7 @@ void queueDataParser(QueueHandle_t queue) {
 		int new_element_size = encode(element, packet + packet_size);
 
 		// if no space left in packet stop encoding
-		if (packet_size + new_element_size > PACKET_SIZE - 2) {
+		if (packet_size + new_element_size > PACKET_SIZE - 4) {
 			break; // element was peeked so it will remain in queue
 		}
 		// if encoding finished set new packet size
@@ -196,7 +196,7 @@ namespace Startup {
 	void startMS() {
 		ms5611.addQueue(&sendQueue);
 		ms5611.addQueue(&saveQueue);
-		ms5611.Sensor::begin(100, 5, [](){
+		ms5611.Sensor::begin(300, 5, [](){
 			ms5611.start();
 		});
 	}
