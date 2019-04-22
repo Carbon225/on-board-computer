@@ -70,10 +70,8 @@ void queueDataParser(QueueHandle_t queue) {
 	uint8_t packet[PACKET_SIZE + sizeof(DataQueue::QueueElement)] = {0}; // overhead for last element
 	int packet_size = 1;
 
-	/*bool encoded_time = false;
-
-	memcpy(packet + packet_size, element.time, sizeof(element.time));
-	packetSize += sizeof(element.time);*/
+	memcpy((void*)(packet + packet_size), (void*)&element.time, sizeof(element.time));
+	packet_size += sizeof(element.time);
 
 	// read next element
 	while (xQueuePeek(queue, &element, 0)) {
