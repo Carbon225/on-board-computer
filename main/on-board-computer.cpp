@@ -79,6 +79,15 @@ void queueDataParser(QueueHandle_t queue) {
 
 	// read next element
 	while (xQueuePeek(queue, &element, 0)) {
+		// don't send data other than temperature, pressure and location
+		if (element.type != DataTypes::Temperature ||
+			element.type != DataTypes::Pressure ||
+			element.type != DataTypes::LocationData) {
+				// clear element from queue
+				xQueueReceive(queue, &element, 0);
+				// read next element
+				continue;
+			}
 		logElement(element);
 
 		// try to encode and get size of encoded data
@@ -318,6 +327,7 @@ extern "C" void app_main() {
 
 	// start flushing the queue
 	sendQueue.setFlushFunction(queueDataParser, 1300, "sendQueue", 4);
+	vTaskDelay(100 / portTICK_PERIOD_MS);
 	saveQueue.setFlushFunction(saveDataParser, 1000, "saveQueue", 3);
 
 	// start receiving data from ground station
