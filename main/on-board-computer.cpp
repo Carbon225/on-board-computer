@@ -80,8 +80,8 @@ void queueDataParser(QueueHandle_t queue) {
 	// read next element
 	while (xQueuePeek(queue, &element, 0)) {
 		// don't send data other than temperature, pressure and location
-		if (element.type != DataTypes::Temperature ||
-			element.type != DataTypes::Pressure ||
+		if (element.type != DataTypes::Temperature &&
+			element.type != DataTypes::Pressure &&
 			element.type != DataTypes::LocationData) {
 				// clear element from queue
 				xQueueReceive(queue, &element, 0);
