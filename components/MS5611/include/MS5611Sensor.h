@@ -21,6 +21,7 @@ class MS5611Sensor : public Sensor, private MS5611 {
 private:
 	bool _started = false;
 	double _referencePressure = 101325;
+	double _lastPressure = _referencePressure;
 
 protected:
 	virtual DataQueue::QueueElement read() {
@@ -31,8 +32,8 @@ protected:
 				int count = 0;
 				while (!xSemaphoreTake(i2c_mutex, 0 / portTICK_PERIOD_MS)) {
 					if (count > 10) {
-						debugE("MS I2C blocked");
-						Sensor::sendToQueues(ErrorTypeToElement(ErrorTypes::I2CBlocked));
+						// debugE("MS I2C blocked");
+						// Sensor::sendToQueues(ErrorTypeToElement(ErrorTypes::I2CBlocked));
 					}
 					count++;
 					vTaskDelay(10 / portTICK_PERIOD_MS);
@@ -49,9 +50,12 @@ protected:
 				// debugD("Done reading");
 
 				// verify data
-				if (realPressure < 90000 || realPressure > 150000) {
-					return ErrorTypeToElement(ErrorTypes::BadReading);
+				if (realPressure < 40000 || realPressure > 120000) {
+					realPressure = _lastPressure;
+					// return ErrorTypeToElement(ErrorTypes::BadReading);
 				}
+
+				_lastPressure = realPressure;
 
 				// debugV("Temperature = %d", realTemperature);
 
