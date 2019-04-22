@@ -94,7 +94,7 @@ void queueDataParser(QueueHandle_t queue) {
 		int new_element_size = encode(element, packet + packet_size);
 
 		// if no space left in packet stop encoding
-		if (packet_size + new_element_size > PACKET_SIZE) {
+		if (packet_size + new_element_size > PACKET_SIZE - 2) {
 			break; // element was peeked so it will remain in queue
 		}
 		// if encoding finished set new packet size
