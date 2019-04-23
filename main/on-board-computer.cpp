@@ -82,7 +82,8 @@ void queueDataParser(QueueHandle_t queue) {
 		// don't send data other than temperature, pressure and location
 		if (element.type != DataTypes::Temperature &&
 			element.type != DataTypes::Pressure &&
-			element.type != DataTypes::LocationData) {
+			element.type != DataTypes::LocationData &&
+			element.type != DataTypes::PressureBMP) {
 				// clear element from queue
 				xQueueReceive(queue, &element, 0);
 				// read next element
@@ -142,13 +143,13 @@ void saveDataParser(QueueHandle_t queue) {
 #define ENABLE_TMP
 #define ENABLE_MS
 #define ENABLE_BMP
-#define ENABLE_PMS
-#define ENABLE_GPS
+// #define ENABLE_PMS
+// #define ENABLE_GPS
 #define ENABLE_SD
 // #define ENABLE_SERVO
 // #define TEST_SERVO
 
-#define WAIT_FOR_DEBUG
+// #define WAIT_FOR_DEBUG
 
 #ifdef RECEIVER
 	const char *hostname = "xtrstation"; // receiver
