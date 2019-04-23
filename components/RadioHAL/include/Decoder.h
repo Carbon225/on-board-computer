@@ -103,6 +103,17 @@ int parseData(uint8_t data[PACKET_SIZE], void (*parser)(DataQueue::QueueElement)
 			i += sizeof(ErrorTypes::ErrorType) + 1;
 			break;
 
+        case DataTypes::TemperatureBMP:
+            memcpy((void *)&(dataUnion.floatValue), data + i + 1, sizeof(float));
+            element.type = DataTypes::TemperatureBMP;
+            i += sizeof(float) + 1;
+            break;
+
+        case DataTypes::PressureBMP:
+            memcpy((void *)&(dataUnion.longValue), data + i + 1, sizeof(long));
+            element.type = DataTypes::PressureBMP;
+            i += sizeof(long) + 1;
+            break;
         
 
         case 0xff: // packet end
@@ -178,6 +189,16 @@ int encode(DataQueue::QueueElement element, uint8_t *target) {
 		memcpy((void*) target + 1, (void *)&(element.data.errorInfo), sizeof(ErrorTypes::ErrorType));
 		return sizeof(ErrorTypes::ErrorType) + 1;
 		break;
+
+    case DataTypes::TemperatureBMP:
+        memcpy((void*) target + 1, (void *)&(element.data.floatValue), sizeof(float));
+        return sizeof(float) + 1;
+        break;
+
+    case DataTypes::PressureBMP:
+        memcpy((void*) target + 1, (void *)&(element.data.longValue), sizeof(long));
+        return sizeof(long) + 1;
+        break;
 
     default:
         return 0;
