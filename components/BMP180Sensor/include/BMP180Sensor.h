@@ -1,5 +1,5 @@
-#ifndef _MS5611SENSOR_H_
-#define _MS5611SENSOR_H_
+#ifndef _BMP180SENSOR_H_
+#define _BMP180SENSOR_H_
 
 #include <stdio.h>
 #include "freertos/FreeRTOS.h"
@@ -9,6 +9,7 @@
 
 #include "Arduino.h"
 // #include <Wire.h>
+#include "BMP180.h"
 #include "RemoteDebug.h"
 #include "Sensor.h"
 #include "DataQueue.h"
@@ -16,54 +17,41 @@
 extern RemoteDebug Debug;
 extern SemaphoreHandle_t i2c_mutex;
 
-class MS5611Sensor : public Sensor {
+class BMP180Sensor : public Sensor, private Adafruit_BMP085 {
 private:
 	bool _started = false;
 	double _referencePressure = 101325;
-	double _lastPressure = _referencePressure;
 
 protected:
 	virtual DataQueue::QueueElement read() {
 		if (_started) {
-			// debugD("Getting semaphore");
 			if (i2c_mutex != NULL) {
 				
 				int count = 0;
 				while (!xSemaphoreTake(i2c_mutex, 0 / portTICK_PERIOD_MS)) {
 					if (count > 10) {
-						// debugE("MS I2C blocked");
+						// debugE("BMP I2C blocked");
 						// Sensor::sendToQueues(ErrorTypeToElement(ErrorTypes::I2CBlocked));
 					}
 					count++;
 					vTaskDelay(10 / portTICK_PERIOD_MS);
 				}
+
+				debugD("Reading BMP");
 				
-				// try to get i2c semaphore
-				// if  (xSemaphoreTake(i2c_mutex, 50 / portTICK_PERIOD_MS)) {
-				// debugD("Reading MS");
-				
-				double realTemperature = MS5611::getTemperature() / 100;
-				int32_t realPressure = MS5611::getPressure();
+				float realTemperature = Adafruit_BMP085::readTemperature();
+				int32_t realPressure = Adafruit_BMP085::readPressure();
+
+				debugD("BMP Temp = %g\nBMP Press = %d\n", realTemperature, realPressure);
 
 				// give back semaphore
 				xSemaphoreGive(i2c_mutex);
-				// debugD("Done reading");
-
-				// verify data
-				if (realPressure < 40000 || realPressure > 120000) {
-					realPressure = _lastPressure;
-					// return ErrorTypeToElement(ErrorTypes::BadReading);
-				}
-
-				_lastPressure = realPressure;
-
-				// debugV("Temperature = %d", realTemperature);
 
 				DataQueue::DataUnion data;
-				data.doubleValue = realTemperature;
+				data.floatValue = realTemperature;
 
 				DataQueue::QueueElement element = {
-					.type = DataTypes::TemperatureMS,
+					.type = DataTypes::TemperatureBMP,
 					.data = data,
 					.time = (uint16_t) (millis() / 1000)
 				};
@@ -71,7 +59,7 @@ protected:
 				// queue temperature element
 				Sensor::sendToQueues(element);
 
-				element.type = DataTypes::Pressure;
+				element.type = DataTypes::PressureBMP;
 				element.data.longValue = realPressure;
 
 				// queue pressure element
@@ -94,13 +82,13 @@ protected:
 	}
 
 public:
-    MS5611Sensor(const char *const pcName)
-    : Sensor(pcName), MS5611() {
+    BMP180Sensor(const char *const pcName)
+    : Sensor(pcName), Adafruit_BMP085() {
 		
     }
 
 	void start() {
-        debugD("Starting MS");
+        debugD("Starting BMP");
 
 		if (i2c_mutex != NULL) {
 			// wait for i2c semaphore
@@ -109,30 +97,28 @@ public:
 				// Sensor::sendToQueues(ErrorTypeToElement(ErrorTypes::I2CBlocked));
 			}
 			// start sensor and give back semaphore
-			MS5611::begin();
+			while (!Adafruit_BMP085::begin()) {
+				debugE("BMP start failed");
+				// xSemaphoreGive(i2c_mutex);
+				// return;
+				vTaskDelay(5 / portTICK_PERIOD_MS);
+			}
 
 			xSemaphoreGive(i2c_mutex);
 				
 			_started = true;
-			debugI("MS started");
+			debugI("BMP started");
 		} else {
-			debugE("MS start semaphore null");
-			Sensor::sendToQueues(ErrorTypeToElement(ErrorTypes::SemaphoreNULL));
+			debugE("BMP start semaphore null");
+			// Sensor::sendToQueues(ErrorTypeToElement(ErrorTypes::SemaphoreNULL));
 		}
-    }
-
-    // in meters
-    unsigned int getAltitide() {
-    	int32_t pressure = MS5611::getPressure();
-    	// double altitude = MS5611::getAltitude(pressure);
-
-    	return (unsigned int) 0;
     }
 
 	void stop() {
         Sensor::stop();
     }
 };
+
 
 
 #endif
