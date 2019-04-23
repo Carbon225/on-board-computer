@@ -4,7 +4,7 @@ Library for barometric pressure sensor MS5611-01BA on I2C with arduino
 
 by Petr Gronat@2014
 */
-#define OSR 					3		// 0-3
+#define OSR 					2		// 0-3
 #define CMD_RESET 				0x1E
 #define CMD_ADC_READ			0x00
 #define CMD_CONV_D1_BASE 		0x40
