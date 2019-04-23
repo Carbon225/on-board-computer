@@ -41,4 +41,6 @@ class MS5611{
 		uint32_t 	m_lastTime;
 };
 
+void carbonWait(uint32_t ms);
+
 #endif

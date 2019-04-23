@@ -11,7 +11,7 @@
 
 #include "DataQueue.h"
 
-#define PACKET_SIZE 64
+#define PACKET_SIZE 50
 
 struct LocationDataEncode {
     int32_t lat;

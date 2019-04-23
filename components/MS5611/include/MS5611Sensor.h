@@ -42,7 +42,7 @@ protected:
 				// try to get i2c semaphore
 				// if  (xSemaphoreTake(i2c_mutex, 50 / portTICK_PERIOD_MS)) {
 				// debugD("Reading MS");
-				double realTemperature = MS5611::getTemperature() / 100;
+				double realTemperature = (double)MS5611::getTemperature() / 100.0f;
 				int32_t realPressure = MS5611::getPressure();
 
 				// give back semaphore
@@ -50,10 +50,10 @@ protected:
 				// debugD("Done reading");
 
 				// verify data
-				if (realPressure < 40000 || realPressure > 120000) {
+				/*if (realPressure < 40000 || realPressure > 120000) {
 					realPressure = _lastPressure;
 					// return ErrorTypeToElement(ErrorTypes::BadReading);
-				}
+				}*/
 
 				_lastPressure = realPressure;
 
