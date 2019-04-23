@@ -17,7 +17,7 @@ by Petr Gronat@2014
 
 
 // address of the device MS5611
-#define ADD_MS5611 0x77 	// can be 0x76 if CSB pin is connected to GND
+#define ADD_MS5611 0x76 	// can be 0x76 if CSB pin is connected to GND
 
 class MS5611{
 	public:

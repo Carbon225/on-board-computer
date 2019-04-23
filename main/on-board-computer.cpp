@@ -18,6 +18,7 @@
 #include "GPSSensor.h"
 #include "MS5611Sensor.h"
 #include "TMP102Sensor.h"
+#include "BMP180Sensor.h"
 
 #include "RemoteDebug.h"
 #include "DataStorage.h"
@@ -34,6 +35,7 @@ RadioHAL radio;
 MS5611Sensor ms5611("ms");
 TMP102Sensor tmp102("tmp");
 GPSSensor gps("gps");
+BMP180Sensor bmp180("bmp");
 
 // mutex semaphore to make sure only one task at a time can use i2c and radio
 SemaphoreHandle_t i2c_mutex = NULL;
@@ -141,6 +143,7 @@ void saveDataParser(QueueHandle_t queue) {
 #define ENABLE_DHT
 #define ENABLE_TMP
 #define ENABLE_MS
+#define ENABLE_BMP
 #define ENABLE_PMS
 #define ENABLE_GPS
 #define ENABLE_SD
@@ -202,6 +205,14 @@ namespace Startup {
 		});
 	}
 
+	void startBMP() {
+		bmp180.addQueue(&sendQueue);
+		bmp180.addQueue(&saveQueue);
+		bmp180.Sensor::begin(400, 5, [](){
+			bmp180.start();
+		});
+	}
+
 	void startPMS() {
 		pms5003.addQueue(&saveQueue);
 		pms5003.Sensor::begin(2000, 3, [](){
@@ -210,7 +221,7 @@ namespace Startup {
 	}
 
 	void startGPS() {
-		gps.addQueue(&sendQueue);
+		// gps.addQueue(&sendQueue);
 		gps.addQueue(&saveQueue);
 		gps.Sensor::begin(3000, 3, [](){
 			gps.start();
@@ -296,6 +307,11 @@ extern "C" void app_main() {
 	#ifdef ENABLE_TMP
 		Startup::startTMP();
 		vTaskDelay(10 / portTICK_PERIOD_MS);
+	#endif
+
+	#ifdef ENABLE_BMP
+		Startup::startBMP();
+		vTaskDelay(50 / portTICK_PERIOD_MS);
 	#endif
 
 	#ifdef ENABLE_DHT
