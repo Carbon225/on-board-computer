@@ -4,7 +4,7 @@ Library for barometric pressure sensor MS5611-01BA on I2C with arduino
 
 by Petr Gronat@2014
 */
-#define OSR 					3		// 0-3
+#define OSR 					2		// 0-3
 #define CMD_RESET 				0x1E
 #define CMD_ADC_READ			0x00
 #define CMD_CONV_D1_BASE 		0x40
@@ -28,6 +28,12 @@ TODO:
 */
 
 #include "MS5611.h"
+
+void carbonWait(uint32_t ms) {
+	unsigned long start = micros();
+	while (micros() - start < ms * 1000);
+}
+
 MS5611::MS5611(){
 	m_T 		= 0;
 	m_P 		= 0;
@@ -58,7 +64,7 @@ int32_t	MS5611::getPressure(){
 
 uint32_t MS5611::getRawPressure(){
 	sendCommand(CMD_CONV_D1_BASE+OSR*CONV_REG_SIZE);	//read sensor, prepare a data
-	delay(1+2*OSR); 									//wait at least 8.33us for full oversampling
+	carbonWait(1+2*OSR); 									//wait at least 8.33us for full oversampling
 	sendCommand(CMD_ADC_READ); 							//get ready for reading the data
 	return readnBytes(NBYTES_CONV);						//reading the data
 }
@@ -82,7 +88,7 @@ int32_t MS5611::getTemperature(){
 
 uint32_t MS5611::getRawTemperature(){	
 	sendCommand(CMD_CONV_D2_BASE+OSR*CONV_REG_SIZE);		//read sensor, prepare a data
-	delay(1+2*OSR); 										//wait at least 8.33us
+	carbonWait(1+2*OSR); 										//wait at least 8.33us
 	sendCommand(CMD_ADC_READ); 								//get ready for reading the data
 	return readnBytes(NBYTES_CONV); 						//reading the data
 }
