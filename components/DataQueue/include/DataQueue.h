@@ -62,19 +62,19 @@ namespace ErrorTypes {
 // add a different type for each reading
 namespace DataTypes {
     enum DataType {
+		Temperature,        // float
+		Pressure,           // long
+		LocationData,
+		PressureBMP,		// long
+		Humidity,           // float
+		ErrorInfo,
         Counter,            // int
-        Temperature,        // float
 		TemperatureMS,      // double
 		TemperatureTMP,     // float
-		Pressure,           // long
-        Humidity,           // float
 		PMS5003,
 		MPU6050,
-		LocationData,
-		ErrorInfo,
 		Timestamp,
 		TemperatureBMP,		// float
-		PressureBMP			// long
     };
 }
 
