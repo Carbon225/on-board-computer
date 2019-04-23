@@ -130,8 +130,8 @@ namespace DataQueue {
 
             // sleep
 			debugD("Sleep for %d", params.flush_delay);
-            // vTaskDelayUntil(&xLastWakeTime, params.flush_delay / portTICK_PERIOD_MS);
-            vTaskDelay(params.flush_delay / portTICK_PERIOD_MS);
+            vTaskDelayUntil(&xLastWakeTime, params.flush_delay / portTICK_PERIOD_MS);
+            // vTaskDelay(params.flush_delay / portTICK_PERIOD_MS);
         }
         vTaskDelete(NULL);
     }
