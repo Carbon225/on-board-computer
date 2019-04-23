@@ -45,7 +45,7 @@ struct MPUData {
 struct LocationData {
 	double lat;
 	double lng;
-	unsigned int alt;
+	uint32_t alt;
 };
 
 namespace ErrorTypes {
@@ -72,7 +72,9 @@ namespace DataTypes {
 		MPU6050,
 		LocationData,
 		ErrorInfo,
-		Timestamp
+		Timestamp,
+		TemperatureBMP,		// float
+		PressureBMP			// long
     };
 }
 
@@ -124,7 +126,7 @@ namespace DataQueue {
                 params.dataParser(element);
             }*/
 
-			debugD("%d free space", uxTaskGetStackHighWaterMark(NULL));
+			// debugD("%d free space", uxTaskGetStackHighWaterMark(NULL));
 
             // sleep
 			debugD("Sleep for %d", params.flush_delay);
@@ -312,6 +314,22 @@ void elementToJson(DataQueue::QueueElement element, char *target) {
 
 		default:
 			break;
+
+		case DataTypes::TemperatureBMP:
+			dtostrf(element.data.floatValue, 3, 2, buf);
+
+			strcat(target, R"("type":"TemperatureBMP",)");
+			sprintf(temp, R"("value":%s})",
+					buf);
+			strcat(target, temp);
+			break;
+
+		case DataTypes::PressureBMP:
+			strcat(target, R"("type":"PressureBMP",)");
+			sprintf(temp, R"("value":%ld})",
+					element.data.longValue);
+			strcat(target, temp);
+			break;
 	}
 }
 
@@ -410,6 +428,16 @@ void logElementAsync(DataQueue::QueueElement element) {
 
 		default:
 			Serial.print("Unknown data type\n");
+			break;
+
+		case DataTypes::TemperatureBMP:
+			Serial.print("TemperatureBMP = ");
+			Serial.println(element.data.floatValue);
+			break;
+
+		case DataTypes::PressureBMP:
+			Serial.print("PressureBMP = ");
+			Serial.println(element.data.longValue);
 			break;
 	}
 }
@@ -558,6 +586,16 @@ void logElement(DataQueue::QueueElement element, bool async = false) {
 					break;
 			}
 			*/
+			break;
+
+		case DataTypes::TemperatureBMP:
+			printf("TemperatureBMP = %g celsius\n", element.data.floatValue);
+			debugI("TemperatureBMP = %g celsius\n", element.data.floatValue);
+			break;
+
+		case DataTypes::PressureBMP:
+			printf("PressureBMP = %ld\n", element.data.longValue);
+			debugI("PressureBMP = %ld\n", element.data.longValue);
 			break;
 
 		default:

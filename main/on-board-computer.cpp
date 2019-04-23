@@ -18,6 +18,7 @@
 #include "GPSSensor.h"
 #include "MS5611Sensor.h"
 #include "TMP102Sensor.h"
+#include "BMP180Sensor.h"
 
 #include "RemoteDebug.h"
 #include "DataStorage.h"
@@ -34,6 +35,7 @@ RadioHAL radio;
 MS5611Sensor ms5611("ms");
 TMP102Sensor tmp102("tmp");
 GPSSensor gps("gps");
+BMP180Sensor bmp180("bmp");
 
 // mutex semaphore to make sure only one task at a time can use i2c and radio
 SemaphoreHandle_t i2c_mutex = NULL;
@@ -41,6 +43,8 @@ SemaphoreHandle_t lora_mutex = NULL;
 
 // main data queue for sending data over radio
 DataQueue::Queue sendQueue;
+// queue for storing data on SD card
+DataQueue::Queue saveQueue;
 
 int counter = 0;
 
@@ -75,20 +79,27 @@ void queueDataParser(QueueHandle_t queue) {
 
 	// read next element
 	while (xQueuePeek(queue, &element, 0)) {
+		// don't send data other than temperature, pressure and location
+		if (element.type != DataTypes::Temperature &&
+			element.type != DataTypes::Pressure &&
+			element.type != DataTypes::LocationData) {
+				// clear element from queue
+				xQueueReceive(queue, &element, 0);
+				// read next element
+				continue;
+			}
 		logElement(element);
 
 		// try to encode and get size of encoded data
 		int new_element_size = encode(element, packet + packet_size);
 
 		// if no space left in packet stop encoding
-		if (packet_size + new_element_size > PACKET_SIZE) {
+		if (packet_size + new_element_size > PACKET_SIZE - 2) {
+			debugW("Packet filled");
 			break; // element was peeked so it will remain in queue
 		}
 		// if encoding finished set new packet size
 		packet_size += new_element_size;
-
-		// save element to storage
-		DataStorage::saveElement(element);
 
 		// clear element from queue
 		xQueueReceive(queue, &element, 0);
@@ -110,6 +121,18 @@ void queueDataParser(QueueHandle_t queue) {
 		radio.send(packet);
 }
 
+void saveDataParser(QueueHandle_t queue) {
+	DataQueue::QueueElement element;
+
+	// read next element
+	while (xQueueReceive(queue, &element, 0)) {
+		debugI("Saving element:");
+		logElement(element);
+		// save element to storage
+		DataStorage::saveElement(element);
+	}
+}
+
 // program settings
 
 // #define RECEIVER
@@ -118,6 +141,7 @@ void queueDataParser(QueueHandle_t queue) {
 #define ENABLE_DHT
 #define ENABLE_TMP
 #define ENABLE_MS
+#define ENABLE_BMP
 #define ENABLE_PMS
 #define ENABLE_GPS
 #define ENABLE_SD
@@ -142,7 +166,7 @@ namespace Startup {
 			// vTaskDelay(5000 / portTICK_PERIOD_MS);
 			OTAService::testBegin(hostname);
 
-			debugD("%d free space OTA", uxTaskGetStackHighWaterMark(NULL));
+			// debugD("%d free space OTA", uxTaskGetStackHighWaterMark(NULL));
 
 			vTaskDelete(NULL);
 		}, "startOTA", 16*1024, NULL, 3, NULL);
@@ -158,13 +182,14 @@ namespace Startup {
 	void startDHT() {
 		// asynchronously start a sensor
 		dht22.addQueue(&sendQueue);
-		dht22.Sensor::begin(1500, 3, [](){
+		dht22.addQueue(&saveQueue);
+		dht22.Sensor::begin(700, 4, [](){
 			dht22.start(GPIO_NUM_4);
 		});
 	}
 
 	void startTMP() {
-		tmp102.addQueue(&sendQueue);
+		tmp102.addQueue(&saveQueue);
 		tmp102.Sensor::begin(1000, 5, [](){
 			tmp102.start();
 		});
@@ -172,20 +197,30 @@ namespace Startup {
 
 	void startMS() {
 		ms5611.addQueue(&sendQueue);
-		ms5611.Sensor::begin(150, 5, [](){
+		ms5611.addQueue(&saveQueue);
+		ms5611.Sensor::begin(400, 5, [](){
 			ms5611.start();
 		});
 	}
 
+	void startBMP() {
+		bmp180.addQueue(&sendQueue);
+		bmp180.addQueue(&saveQueue);
+		bmp180.Sensor::begin(400, 5, [](){
+			bmp180.start();
+		});
+	}
+
 	void startPMS() {
-		pms5003.addQueue(&sendQueue);
+		pms5003.addQueue(&saveQueue);
 		pms5003.Sensor::begin(2000, 3, [](){
 			pms5003.start(GPIO_NUM_17, GPIO_NUM_16);
 		});
 	}
 
 	void startGPS() {
-		gps.addQueue(&sendQueue);
+		// gps.addQueue(&sendQueue);
+		gps.addQueue(&saveQueue);
 		gps.Sensor::begin(3000, 3, [](){
 			gps.start();
 		});
@@ -221,6 +256,7 @@ extern "C" void app_main() {
 	i2c_mutex = xSemaphoreCreateMutex();
 
 	sendQueue.begin(256);
+	saveQueue.begin(256);
 
 	// start the radio
 	radio.begin(12, -1, 22, 4346E5); // 434.6 MHz
@@ -263,12 +299,17 @@ extern "C" void app_main() {
 	#ifdef ENABLE_MS
 		Startup::startMS();
 		// bigger delay to make MS and TMP read at different times
-		vTaskDelay(450 / portTICK_PERIOD_MS);
+		vTaskDelay(50 / portTICK_PERIOD_MS);
 	#endif
 
 	#ifdef ENABLE_TMP
 		Startup::startTMP();
 		vTaskDelay(10 / portTICK_PERIOD_MS);
+	#endif
+
+	#ifdef ENABLE_BMP
+		Startup::startBMP();
+		vTaskDelay(50 / portTICK_PERIOD_MS);
 	#endif
 
 	#ifdef ENABLE_DHT
@@ -295,12 +336,14 @@ extern "C" void app_main() {
 
 	#ifdef TEST_SERVO
 		// task for testing the valve
-		xTaskCreate(Cansat::testServoTask, "servoTest", 3*1024, NULL, 3, NULL);
+		xTaskCreate(Cansat::testServoTask, "servoTest", 4*1024, NULL, 3, NULL);
 		vTaskDelay(10 / portTICK_PERIOD_MS);
 	#endif
 
 	// start flushing the queue
-	sendQueue.setFlushFunction(queueDataParser, 1300, "sendQueue", 4);
+	sendQueue.setFlushFunction(queueDataParser, 1400, "sendQueue", 4);
+	vTaskDelay(50 / portTICK_PERIOD_MS);
+	saveQueue.setFlushFunction(saveDataParser, 1000, "saveQueue", 3);
 
 	// start receiving data from ground station
 	// radio.startReceive(Cansat::onReceive);

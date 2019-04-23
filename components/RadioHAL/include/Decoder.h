@@ -13,7 +13,13 @@
 
 #define PACKET_SIZE 64
 
-// decoce packet
+struct LocationDataEncode {
+    int32_t lat;
+    int32_t lng;
+    uint32_t alt;
+};
+
+// decode packet
 int parseData(uint8_t data[PACKET_SIZE], void (*parser)(DataQueue::QueueElement))
 {
     // check packet start
@@ -92,9 +98,18 @@ int parseData(uint8_t data[PACKET_SIZE], void (*parser)(DataQueue::QueueElement)
             break;
 
         case DataTypes::LocationData:
-			memcpy((void *)&(dataUnion.locationData), data + i + 1, sizeof(LocationData));
+            // read int as double
+            {
+                LocationDataEncode locationEncode;
+                // copy data into empty struct
+                memcpy((void *)&(locationEncode), data + i + 1, sizeof(LocationDataEncode));
+                // convert back to double
+                element.data.locationData.lat = (double)locationEncode.lat / 1E4;
+                element.data.locationData.lng = (double)locationEncode.lng / 1E4;
+                element.data.locationData.alt = locationEncode.alt;
+            }
 			element.type = DataTypes::LocationData;
-			i += sizeof(LocationData) + 1;
+			i += sizeof(LocationDataEncode) + 1;
 			break;
 
         case DataTypes::ErrorInfo:
@@ -103,7 +118,17 @@ int parseData(uint8_t data[PACKET_SIZE], void (*parser)(DataQueue::QueueElement)
 			i += sizeof(ErrorTypes::ErrorType) + 1;
 			break;
 
-        
+        case DataTypes::TemperatureBMP:
+            memcpy((void *)&(dataUnion.floatValue), data + i + 1, sizeof(float));
+            element.type = DataTypes::TemperatureBMP;
+            i += sizeof(float) + 1;
+            break;
+
+        case DataTypes::PressureBMP:
+            memcpy((void *)&(dataUnion.longValue), data + i + 1, sizeof(long));
+            element.type = DataTypes::PressureBMP;
+            i += sizeof(long) + 1;
+            break;
 
         case 0xff: // packet end
             i = PACKET_SIZE;
@@ -170,14 +195,34 @@ int encode(DataQueue::QueueElement element, uint8_t *target) {
         break;
 
     case DataTypes::LocationData:
-		memcpy((void*) target + 1, (void *)&(element.data.locationData), sizeof(LocationData));
-		return sizeof(LocationData) + 1;
+        // save double as int32
+        {
+            // create new struct
+            LocationDataEncode locationEncode = {
+                (int32_t)(element.data.locationData.lat * 1E4),
+                (int32_t)(element.data.locationData.lng * 1E4),
+                element.data.locationData.alt
+            };
+            // copy struct into packet
+		    memcpy((void*) target + 1, (void *)&(locationEncode), sizeof(LocationDataEncode));
+        }
+		return sizeof(LocationDataEncode) + 1;
 		break;
 
     case DataTypes::ErrorInfo:
 		memcpy((void*) target + 1, (void *)&(element.data.errorInfo), sizeof(ErrorTypes::ErrorType));
 		return sizeof(ErrorTypes::ErrorType) + 1;
 		break;
+
+    case DataTypes::TemperatureBMP:
+        memcpy((void*) target + 1, (void *)&(element.data.floatValue), sizeof(float));
+        return sizeof(float) + 1;
+        break;
+
+    case DataTypes::PressureBMP:
+        memcpy((void*) target + 1, (void *)&(element.data.longValue), sizeof(long));
+        return sizeof(long) + 1;
+        break;
 
     default:
         return 0;
