@@ -6,7 +6,7 @@
 #include "driver/uart.h"
 #include "driver/gpio.h"
 
-// #define ENABLE_WIFI
+#define ENABLE_WIFI
 
 #include "Arduino.h"
 #include "Wire.h"
@@ -74,8 +74,12 @@ void queueDataParser(QueueHandle_t queue) {
 	uint8_t packet[PACKET_SIZE + sizeof(DataQueue::QueueElement)] = {0}; // overhead for last element
 	int packet_size = 1;
 
+	// peek and encode time from first element
+	xQueuePeek(queue, &element, 0);
 	memcpy((void*)(packet + packet_size), (void*)&element.time, sizeof(element.time));
 	packet_size += sizeof(element.time);
+
+	debugD("Time = %u Encoded = %u", element.time, *(uint16_t*)(packet + 1));
 
 	// read next element
 	while (xQueuePeek(queue, &element, 0)) {
