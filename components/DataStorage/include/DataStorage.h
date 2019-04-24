@@ -74,6 +74,14 @@ namespace DataStorage {
                 SDCard::saveString(jsonObject, "gps");
                 break;
 
+            case DataTypes::TemperatureBMP:
+                SDCard::saveString(jsonObject, "tmp");
+                break;
+
+            case DataTypes::PressureMS:
+                SDCard::saveString(jsonObject, "pres");
+                break;
+
             default:
                 break;
         }
