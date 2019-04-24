@@ -220,7 +220,7 @@ namespace Startup {
 	}
 
 	void startGPS() {
-		// gps.addQueue(&sendQueue);
+		gps.addQueue(&sendQueue);
 		gps.addQueue(&saveQueue);
 		gps.Sensor::begin(3000, 3, [](){
 			gps.start();
