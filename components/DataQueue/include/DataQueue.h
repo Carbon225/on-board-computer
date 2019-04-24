@@ -426,10 +426,6 @@ void logElementAsync(DataQueue::QueueElement element) {
 			*/
 			break;
 
-		default:
-			Serial.print("Unknown data type\n");
-			break;
-
 		case DataTypes::TemperatureBMP:
 			Serial.print("TemperatureBMP = ");
 			Serial.println(element.data.floatValue);
@@ -438,6 +434,10 @@ void logElementAsync(DataQueue::QueueElement element) {
 		case DataTypes::PressureBMP:
 			Serial.print("PressureBMP = ");
 			Serial.println(element.data.longValue);
+			break;
+
+		default:
+			Serial.print("Unknown data type\n");
 			break;
 	}
 }
