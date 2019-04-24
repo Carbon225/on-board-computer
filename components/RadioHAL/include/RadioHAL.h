@@ -82,11 +82,10 @@ public:
 	void send(uint8_t *data) {
 		if (_started) {
 			if (lora_mutex != NULL) {
+				TickType_t function_start = xTaskGetTickCount();
 				// get lora semaphore
-				if (xSemaphoreTake(lora_mutex, 20 / portTICK_PERIOD_MS)) {
+				if (xSemaphoreTake(lora_mutex, 150 / portTICK_PERIOD_MS)) {
 					ESP_LOGD(m_TAG, "Sending packet");
-
-					TickType_t function_start = xTaskGetTickCount();
 
 					while (!LoRa.beginPacket(true)) {
 						vTaskDelay(10 / portTICK_PERIOD_MS);
@@ -95,7 +94,7 @@ public:
 					TickType_t transmission_start = xTaskGetTickCount();
 
 					LoRa.write(data, PACKET_SIZE);
-					LoRa.endPacket(false); // not async
+					LoRa.endPacket(true); // async
 
 					xSemaphoreGive(lora_mutex);
 
