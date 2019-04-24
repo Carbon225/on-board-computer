@@ -75,11 +75,11 @@ namespace DataStorage {
                 break;
 
             case DataTypes::TemperatureBMP:
-                SDCard::saveString(jsonObject, "tmp");
+                SDCard::saveString(jsonObject, "bmpt");
                 break;
 
             case DataTypes::PressureMS:
-                SDCard::saveString(jsonObject, "pres");
+                SDCard::saveString(jsonObject, "bmpp");
                 break;
 
             default:
