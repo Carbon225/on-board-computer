@@ -6,7 +6,7 @@
 #include "driver/uart.h"
 #include "driver/gpio.h"
 
-#define ENABLE_WIFI
+// #define ENABLE_WIFI
 
 #include "Arduino.h"
 #include "Wire.h"
