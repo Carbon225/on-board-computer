@@ -41,7 +41,7 @@ int parseData(uint8_t data[PACKET_SIZE], void (*parser)(DataQueue::QueueElement)
     memcpy((void*)&time, data + 1, sizeof(DataQueue::QueueElement::time));
 
     // go through every byte
-    for (int i = 1 + sizeof(DataQueue::QueueElement::time); i < PACKET_SIZE - 1;
+    for (int i = 1 + sizeof(DataQueue::QueueElement::time); i < PACKET_SIZE - 1;)
     {
         DataQueue::QueueElement element;
         DataQueue::DataUnion dataUnion;
