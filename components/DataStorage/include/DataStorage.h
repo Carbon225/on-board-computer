@@ -78,7 +78,7 @@ namespace DataStorage {
                 SDCard::saveString(jsonObject, "bmpt");
                 break;
 
-            case DataTypes::PressureMS:
+            case DataTypes::PressureBMP:
                 SDCard::saveString(jsonObject, "bmpp");
                 break;
 
