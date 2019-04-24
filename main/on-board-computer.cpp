@@ -143,12 +143,12 @@ void saveDataParser(QueueHandle_t queue) {
 // #define RECEIVER
 
 // #define ENABLE_COUNTER
-#define ENABLE_DHT
+// #define ENABLE_DHT
 #define ENABLE_TMP
 // #define ENABLE_MS
-#define ENABLE_BMP
-#define ENABLE_PMS
-#define ENABLE_GPS
+// #define ENABLE_BMP
+// #define ENABLE_PMS
+// #define ENABLE_GPS
 #define ENABLE_SD
 // #define ENABLE_SERVO
 // #define TEST_SERVO
