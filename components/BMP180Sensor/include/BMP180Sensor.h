@@ -20,7 +20,7 @@ extern SemaphoreHandle_t i2c_mutex;
 class BMP180Sensor : public Sensor, private Adafruit_BMP085 {
 private:
 	bool _started = false;
-	double _referencePressure = 101325;
+	double _referencePressure = 101111;
 
 protected:
 	virtual DataQueue::QueueElement read() {

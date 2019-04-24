@@ -20,7 +20,7 @@ extern SemaphoreHandle_t i2c_mutex;
 class MS5611Sensor : public Sensor, private MS5611 {
 private:
 	bool _started = false;
-	double _referencePressure = 101325;
+	double _referencePressure = 101111;
 	double _lastPressure = _referencePressure;
 
 protected:
