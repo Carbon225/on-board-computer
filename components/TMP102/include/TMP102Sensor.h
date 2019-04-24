@@ -33,13 +33,13 @@ protected:
 						// Sensor::sendToQueues(ErrorTypeToElement(ErrorTypes::I2CBlocked));
 					}
 					count++;
-					vTaskDelay(10 / portTICK_PERIOD_MS);
+					vTaskDelay(5 / portTICK_PERIOD_MS);
 				}
 
 				// read sensor and give back semaphore
-				TMP102::wakeup();
+				// TMP102::wakeup();
 				float temp = TMP102::readTempC();
-				TMP102::sleep();
+				// TMP102::sleep();
 
 				xSemaphoreGive(i2c_mutex);
 
@@ -86,6 +86,7 @@ public:
 			}
 		
 			TMP102::begin();
+			vTaskDelay(10 / portTICK_PERIOD_MS);
 			TMP102::wakeup();
 
 			xSemaphoreGive(i2c_mutex);
