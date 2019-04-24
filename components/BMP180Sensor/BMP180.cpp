@@ -117,7 +117,7 @@ int32_t Adafruit_BMP085::readPressure(void) {
   int32_t UT, UP, B3, B5, B6, X1, X2, X3, p;
   uint32_t B4, B7;
 
-  UT = readRawTemperature();
+  UT = 27898; // readRawTemperature();
   UP = readRawPressure();
 
 #if BMP085_DEBUG == 1
