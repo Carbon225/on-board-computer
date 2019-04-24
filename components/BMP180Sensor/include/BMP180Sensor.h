@@ -37,12 +37,12 @@ protected:
 					vTaskDelay(10 / portTICK_PERIOD_MS);
 				}
 
-				debugD("Reading BMP");
+				// debugD("Reading BMP");
 				
-				float realTemperature = Adafruit_BMP085::readTemperature();
-				int32_t realPressure = Adafruit_BMP085::readPressure();
+				float realTemperature = 11.11; // Adafruit_BMP085::readTemperature();
+				int32_t realPressure = Adafruit_BMP085::readRawPressure(); // Adafruit_BMP085::readPressure();
 
-				debugD("BMP Temp = %g\nBMP Press = %d\n", realTemperature, realPressure);
+				// debugD("BMP Temp = %g\nBMP Press = %d\n", realTemperature, realPressure);
 
 				// give back semaphore
 				xSemaphoreGive(i2c_mutex);
