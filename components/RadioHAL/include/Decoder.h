@@ -36,8 +36,12 @@ int parseData(uint8_t data[PACKET_SIZE], void (*parser)(DataQueue::QueueElement)
     if (data[PACKET_SIZE - 1] != sum)
         return 1;
 
+    // read time
+    uint16_t time = 0;
+    memcpy((void*)&time, data + 1, sizeof(DataQueue::QueueElement::time));
+
     // go through every byte
-    for (int i = 1; i < PACKET_SIZE - 1;)
+    for (int i = 1 + sizeof(DataQueue::QueueElement::time); i < PACKET_SIZE - 1;
     {
         DataQueue::QueueElement element;
         DataQueue::DataUnion dataUnion;
@@ -104,9 +108,9 @@ int parseData(uint8_t data[PACKET_SIZE], void (*parser)(DataQueue::QueueElement)
                 // copy data into empty struct
                 memcpy((void *)&(locationEncode), data + i + 1, sizeof(LocationDataEncode));
                 // convert back to double
-                element.data.locationData.lat = (double)locationEncode.lat / 1E4;
-                element.data.locationData.lng = (double)locationEncode.lng / 1E4;
-                element.data.locationData.alt = locationEncode.alt;
+                dataUnion.locationData.lat = (double)locationEncode.lat / 1E4;
+                dataUnion.locationData.lng = (double)locationEncode.lng / 1E4;
+                dataUnion.locationData.alt = locationEncode.alt;
             }
 			element.type = DataTypes::LocationData;
 			i += sizeof(LocationDataEncode) + 1;
@@ -139,6 +143,7 @@ int parseData(uint8_t data[PACKET_SIZE], void (*parser)(DataQueue::QueueElement)
             continue;
         }
 
+        element.time = time;
         element.data = dataUnion;
         parser(element);
     }
