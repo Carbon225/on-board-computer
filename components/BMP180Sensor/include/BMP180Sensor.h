@@ -40,7 +40,7 @@ protected:
 				// debugD("Reading BMP");
 				
 				float realTemperature = 11.11; // Adafruit_BMP085::readTemperature();
-				int32_t realPressure = Adafruit_BMP085::readRawPressure(); // Adafruit_BMP085::readPressure();
+				int32_t realPressure = Adafruit_BMP085::readPressure();
 
 				// debugD("BMP Temp = %g\nBMP Press = %d\n", realTemperature, realPressure);
 
