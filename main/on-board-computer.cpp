@@ -127,7 +127,7 @@ void saveDataParser(QueueHandle_t queue) {
 
 	// read next element
 	while (xQueueReceive(queue, &element, 0)) {
-		debugI("Saving element:");
+		debugI("Saving element %u:", element.type);
 		logElement(element);
 		// save element to storage
 		DataStorage::saveElement(element);
@@ -143,8 +143,8 @@ void saveDataParser(QueueHandle_t queue) {
 #define ENABLE_TMP
 #define ENABLE_MS
 #define ENABLE_BMP
-// #define ENABLE_PMS
-// #define ENABLE_GPS
+#define ENABLE_PMS
+#define ENABLE_GPS
 #define ENABLE_SD
 // #define ENABLE_SERVO
 // #define TEST_SERVO
@@ -191,7 +191,7 @@ namespace Startup {
 
 	void startTMP() {
 		tmp102.addQueue(&saveQueue);
-		tmp102.Sensor::begin(1000, 5, [](){
+		tmp102.Sensor::begin(1000, 6, [](){
 			tmp102.start();
 		});
 	}
@@ -199,7 +199,7 @@ namespace Startup {
 	void startMS() {
 		ms5611.addQueue(&sendQueue);
 		ms5611.addQueue(&saveQueue);
-		ms5611.Sensor::begin(400, 5, [](){
+		ms5611.Sensor::begin(400, 6, [](){
 			ms5611.start();
 		});
 	}
@@ -207,7 +207,7 @@ namespace Startup {
 	void startBMP() {
 		bmp180.addQueue(&sendQueue);
 		bmp180.addQueue(&saveQueue);
-		bmp180.Sensor::begin(400, 5, [](){
+		bmp180.Sensor::begin(400, 6, [](){
 			bmp180.start();
 		});
 	}
@@ -342,7 +342,7 @@ extern "C" void app_main() {
 	#endif
 
 	// start flushing the queue
-	sendQueue.setFlushFunction(queueDataParser, 950, "sendQueue", 4);
+	sendQueue.setFlushFunction(queueDataParser, 1500, "sendQueue", 4);
 	vTaskDelay(50 / portTICK_PERIOD_MS);
 	saveQueue.setFlushFunction(saveDataParser, 1000, "saveQueue", 3);
 
