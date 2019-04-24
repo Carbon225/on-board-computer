@@ -42,8 +42,8 @@ protected:
 				// try to get i2c semaphore
 				// if  (xSemaphoreTake(i2c_mutex, 50 / portTICK_PERIOD_MS)) {
 				// debugD("Reading MS");
-				double realTemperature = (double)MS5611::getTemperature() / 100.0f;
-				int32_t realPressure = MS5611::getPressure();
+				double realTemperature = 11.11; // (double)MS5611::getTemperature() / 100.0f;
+				uint32_t realPressure = MS5611::getRawPressure(); // MS5611::getPressure();
 
 				// give back semaphore
 				xSemaphoreGive(i2c_mutex);
@@ -58,6 +58,7 @@ protected:
 				_lastPressure = realPressure;
 
 				// debugV("Temperature = %d", realTemperature);
+				// debugE("MS raw data = %u", realPressure);
 
 				DataQueue::DataUnion data;
 				data.doubleValue = realTemperature;
