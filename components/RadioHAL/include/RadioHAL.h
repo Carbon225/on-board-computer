@@ -84,7 +84,7 @@ public:
 			if (lora_mutex != NULL) {
 				TickType_t function_start = xTaskGetTickCount();
 				// get lora semaphore
-				if (xSemaphoreTake(lora_mutex, 150 / portTICK_PERIOD_MS)) {
+				if (xSemaphoreTake(lora_mutex, 20 / portTICK_PERIOD_MS)) {
 					ESP_LOGD(m_TAG, "Sending packet");
 
 					while (!LoRa.beginPacket(true)) {
