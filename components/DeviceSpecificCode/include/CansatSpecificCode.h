@@ -58,12 +58,12 @@ namespace Cansat {
 
 	void openValve() {
 		debugW("Opening valve");
-		valveServo.write(0);
+		valveServo.write(90);
 	}
 
 	void closeValve() {
 		debugW("Closing valve");
-		valveServo.write(90);
+		valveServo.write(0);
 	}
 
 	void valveTask(void*) {
