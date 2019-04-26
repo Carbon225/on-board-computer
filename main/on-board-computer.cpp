@@ -138,20 +138,12 @@ void saveDataParser(QueueHandle_t queue) {
 	}
 }
 
-int core0idle_count = 0;
-int core1idle_count = 0;
+uint64_t coreidle_count = 0;
 
-void core0Idle(void*) {
+void coreIdle(void*) {
 	while (true) {
-		core0idle_count++;
-		vTaskDelay(5 / portTICK_PERIOD_MS);
-	}
-}
-
-void core1Idle(void*) {
-	while (true) {
-		core1idle_count++;
-		vTaskDelay(5 / portTICK_PERIOD_MS);
+		coreidle_count++;
+		vTaskDelay(1 / portTICK_PERIOD_MS);
 	}
 }
 
@@ -160,12 +152,10 @@ void clearCount(void*) {
         while (true) {
             xLastWakeTime = xTaskGetTickCount();
 
-			ESP_LOGW("PERF", "Core0 = %g%% Core1 = %g%%", (double)core0idle_count / 200.0f * 100.0f, (double)core1idle_count / 200.0f * 100.0f);
-			core0idle_count = 0;
-			core1idle_count = 0;
+			ESP_LOGW("PERF", "CPU usage = %llu%%", 100 - coreidle_count / 5);
+			coreidle_count = 0;
 
-            vTaskDelayUntil(&xLastWakeTime, 1000 / portTICK_PERIOD_MS);
-            // vTaskDelay(params.flush_delay / portTICK_PERIOD_MS);
+            vTaskDelayUntil(&xLastWakeTime, 500 / portTICK_PERIOD_MS);
         }
         vTaskDelete(NULL);
 }
@@ -178,7 +168,7 @@ void clearCount(void*) {
 #define ENABLE_DHT
 #define ENABLE_TMP
 #define ENABLE_MS
-#define ENABLE_BMP
+// #define ENABLE_BMP
 #define ENABLE_PMS
 #define ENABLE_GPS
 #define ENABLE_SD
@@ -288,9 +278,9 @@ extern "C" void app_main() {
 		return;
 	}
 
-	// xTaskCreatePinnedToCore(core0Idle, "idle0", 1024, NULL, 0, NULL, 0);
-	// xTaskCreatePinnedToCore(core1Idle, "idle1", 1024, NULL, 0, NULL, 0);
-	// xTaskCreate(clearCount, "clearCount", 4096, NULL, 5, NULL);
+	xTaskCreate(coreIdle, "idlePerf", 2046, NULL, tskIDLE_PRIORITY, NULL);
+	vTaskDelay(10 / portTICK_PERIOD_MS);
+	xTaskCreate(clearCount, "clearCount", 4096, NULL, 5, NULL);
 
 	// create mutexes
 	lora_mutex = xSemaphoreCreateMutex();
