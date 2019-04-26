@@ -138,19 +138,57 @@ void saveDataParser(QueueHandle_t queue) {
 	}
 }
 
+int core0idle_count = 0;
+int core1idle_count = 0;
+
+void core0Idle(void*) {
+	core0idle_count++;
+	vTaskDelay(5 / portTICK_PERIOD_MS);
+}
+
+void core1Idle(void*) {
+	core1idle_count++;
+	vTaskDelay(5 / portTICK_PERIOD_MS);
+}
+
+void clearCount(void*) {
+	TickType_t xLastWakeTime;
+        while (true) {
+            xLastWakeTime = xTaskGetTickCount();
+
+            QueueElement element;
+
+			// tell parser to read all elements from queue
+            params.dataParser(*(params.queue));
+
+            // call parser for all elements
+            /*while (xQueueReceive(*(params.queue), &element, 0)) {
+                params.dataParser(element);
+            }*/
+
+			// debugD("%d free space", uxTaskGetStackHighWaterMark(NULL));
+
+            // sleep
+			debugD("Sleep for %d", params.flush_delay);
+            vTaskDelayUntil(&xLastWakeTime, params.flush_delay / portTICK_PERIOD_MS);
+            // vTaskDelay(params.flush_delay / portTICK_PERIOD_MS);
+        }
+        vTaskDelete(NULL);
+}
+
 // program settings
 
 // #define RECEIVER
 
-// #define ENABLE_COUNTER
+#define ENABLE_COUNTER
 #define ENABLE_DHT
 #define ENABLE_TMP
-// #define ENABLE_MS
+#define ENABLE_MS
 #define ENABLE_BMP
 #define ENABLE_PMS
 #define ENABLE_GPS
 #define ENABLE_SD
-// #define ENABLE_SERVO
+#define ENABLE_SERVO
 // #define TEST_SERVO
 
 // #define WAIT_FOR_DEBUG
@@ -255,6 +293,9 @@ extern "C" void app_main() {
 		// at this point the program is in safe mode
 		return;
 	}
+
+	xTaskCreatePinnedToCore(core0Idle, "idle0", 1024, NULL, 0, NULL, 0);
+	xTaskCreatePinnedToCore(core1Idle, "idle1", 1024, NULL, 0, NULL, 0);
 
 	// create mutexes
 	lora_mutex = xSemaphoreCreateMutex();
