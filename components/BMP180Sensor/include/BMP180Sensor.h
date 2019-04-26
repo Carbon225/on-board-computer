@@ -102,6 +102,8 @@ public:
 				// xSemaphoreGive(i2c_mutex);
 				// return;
 				vTaskDelay(5 / portTICK_PERIOD_MS);
+
+				break;
 			}
 
 			xSemaphoreGive(i2c_mutex);
