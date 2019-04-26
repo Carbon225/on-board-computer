@@ -58,12 +58,12 @@ namespace Cansat {
 
 	void openValve() {
 		debugW("Opening valve");
-		valveServo.write(90);
+		valveServo.write(0);
 	}
 
 	void closeValve() {
 		debugW("Closing valve");
-		valveServo.write(0);
+		valveServo.write(90);
 	}
 
 	void valveTask(void*) {
@@ -87,8 +87,8 @@ namespace Cansat {
 						openValve();
 						vTaskDelay(10000 / portTICK_PERIOD_MS);
 						closeValve();
-						vTaskDelay(5000 / portTICK_PERIOD_MS);
-						setValveEnable(false);
+						// vTaskDelay(5000 / portTICK_PERIOD_MS);
+						// setValveEnable(false);
 
 						// after opening and closing valve break and kill task
 						break;
@@ -103,19 +103,13 @@ namespace Cansat {
 	}
 
 	void testServoTask(void*) {
-		{	// again use {} to call destructors before vTaskDelete
-			vTaskDelay(1000 / portTICK_PERIOD_MS);
+		{
 			setValveEnable(true);
-			while (true) {				
-				debugW("Opening valve");
-				openValve();
-				vTaskDelay(5000 / portTICK_PERIOD_MS);
-				
-				debugW("Closing valve");
-				closeValve();
-				vTaskDelay(5000 / portTICK_PERIOD_MS);
-			}
-			setValveEnable(false);
+			openValve();
+			vTaskDelay(10000 / portTICK_PERIOD_MS);
+			closeValve();
+			// vTaskDelay(5000 / portTICK_PERIOD_MS);
+			// setValveEnable(false);
 		}
 		vTaskDelete(NULL);
 	}
