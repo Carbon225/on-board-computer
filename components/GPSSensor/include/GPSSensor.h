@@ -41,13 +41,13 @@ private:
 						gpsSensor->_location.lat = gpsSensor->location.lat();
 						gpsSensor->_location.lng = gpsSensor->location.lng();
 					} else {
-						debugE("Location invalid");
+						// debugE("Location invalid");
 					}
 
 					if (gpsSensor->altitude.isValid()) {
 						gpsSensor->_location.alt = (unsigned int) gpsSensor->altitude.meters();
 					} else {
-						debugE("Altitude invalid");
+						// debugE("Altitude invalid");
 					}
 
 					if (gpsSensor->time.isValid()) {

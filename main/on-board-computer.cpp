@@ -346,7 +346,7 @@ extern "C" void app_main() {
 	#endif
 
 	// start flushing the queue
-	sendQueue.setFlushFunction(queueDataParser, 1400, "sendQueue", 4);
+	sendQueue.setFlushFunction(queueDataParser, 1000, "sendQueue", 4);
 	vTaskDelay(50 / portTICK_PERIOD_MS);
 	saveQueue.setFlushFunction(saveDataParser, 1000, "saveQueue", 3);
 
