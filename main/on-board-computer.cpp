@@ -6,7 +6,7 @@
 #include "driver/uart.h"
 #include "driver/gpio.h"
 
-#define ENABLE_WIFI
+// #define ENABLE_WIFI
 
 #include "Arduino.h"
 #include "Wire.h"
@@ -142,13 +142,17 @@ int core0idle_count = 0;
 int core1idle_count = 0;
 
 void core0Idle(void*) {
-	core0idle_count++;
-	vTaskDelay(5 / portTICK_PERIOD_MS);
+	while (true) {
+		core0idle_count++;
+		vTaskDelay(5 / portTICK_PERIOD_MS);
+	}
 }
 
 void core1Idle(void*) {
-	core1idle_count++;
-	vTaskDelay(5 / portTICK_PERIOD_MS);
+	while (true) {
+		core1idle_count++;
+		vTaskDelay(5 / portTICK_PERIOD_MS);
+	}
 }
 
 void clearCount(void*) {
@@ -156,21 +160,11 @@ void clearCount(void*) {
         while (true) {
             xLastWakeTime = xTaskGetTickCount();
 
-            QueueElement element;
+			ESP_LOGW("PERF", "Core0 = %g%% Core1 = %g%%", (double)core0idle_count / 200.0f * 100.0f, (double)core1idle_count / 200.0f * 100.0f);
+			core0idle_count = 0;
+			core1idle_count = 0;
 
-			// tell parser to read all elements from queue
-            params.dataParser(*(params.queue));
-
-            // call parser for all elements
-            /*while (xQueueReceive(*(params.queue), &element, 0)) {
-                params.dataParser(element);
-            }*/
-
-			// debugD("%d free space", uxTaskGetStackHighWaterMark(NULL));
-
-            // sleep
-			debugD("Sleep for %d", params.flush_delay);
-            vTaskDelayUntil(&xLastWakeTime, params.flush_delay / portTICK_PERIOD_MS);
+            vTaskDelayUntil(&xLastWakeTime, 1000 / portTICK_PERIOD_MS);
             // vTaskDelay(params.flush_delay / portTICK_PERIOD_MS);
         }
         vTaskDelete(NULL);
@@ -294,8 +288,9 @@ extern "C" void app_main() {
 		return;
 	}
 
-	xTaskCreatePinnedToCore(core0Idle, "idle0", 1024, NULL, 0, NULL, 0);
-	xTaskCreatePinnedToCore(core1Idle, "idle1", 1024, NULL, 0, NULL, 0);
+	// xTaskCreatePinnedToCore(core0Idle, "idle0", 1024, NULL, 0, NULL, 0);
+	// xTaskCreatePinnedToCore(core1Idle, "idle1", 1024, NULL, 0, NULL, 0);
+	// xTaskCreate(clearCount, "clearCount", 4096, NULL, 5, NULL);
 
 	// create mutexes
 	lora_mutex = xSemaphoreCreateMutex();
