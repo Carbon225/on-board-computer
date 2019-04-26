@@ -58,12 +58,12 @@ namespace Cansat {
 
 	void openValve() {
 		debugW("Opening valve");
-		valveServo.write(0);
+		valveServo.write(90);
 	}
 
 	void closeValve() {
 		debugW("Closing valve");
-		valveServo.write(90);
+		valveServo.write(0);
 	}
 
 	void valveTask(void*) {
@@ -79,10 +79,10 @@ namespace Cansat {
 
 				// filter bad readings (for altitude from pressure sensor)
 				if (alt > 50 && alt < 6000) {
-					// if we are 300 meters below max altitude open valve
+					// if we are 200 meters below max altitude open valve
 					if (alt > highest_alt) {
 						highest_alt = alt;
-					} else if (highest_alt - alt > 300) {
+					} else if (highest_alt - alt > 200) {
 						setValveEnable(true);
 						openValve();
 						vTaskDelay(10000 / portTICK_PERIOD_MS);

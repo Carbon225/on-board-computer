@@ -150,7 +150,7 @@ void saveDataParser(QueueHandle_t queue) {
 #define ENABLE_PMS
 #define ENABLE_GPS
 #define ENABLE_SD
-// #define ENABLE_SERVO
+#define ENABLE_SERVO
 // #define TEST_SERVO
 
 // #define WAIT_FOR_DEBUG
@@ -335,7 +335,7 @@ extern "C" void app_main() {
 
 	#ifdef ENABLE_SERVO
 		// task will open the valve at the target altitude
-		xTaskCreate(Cansat::valveTask, "valveTask", 3*1024, NULL, 5, NULL);
+		xTaskCreate(Cansat::valveTask, "valveTask", 4*1024, NULL, 5, NULL);
 		vTaskDelay(10 / portTICK_PERIOD_MS);
 	#endif
 
