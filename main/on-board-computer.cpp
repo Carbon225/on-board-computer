@@ -138,22 +138,45 @@ void saveDataParser(QueueHandle_t queue) {
 	}
 }
 
-uint64_t coreidle_count = 0;
+uint64_t core0idle_count = 0;
 
-void coreIdle(void*) {
+void core0Idle(void*) {
 	while (true) {
-		coreidle_count++;
+		core0idle_count++;
 		vTaskDelay(1 / portTICK_PERIOD_MS);
 	}
 }
 
-void clearCount(void*) {
+
+uint64_t core1idle_count = 0;
+
+void core1Idle(void*) {
+	while (true) {
+		core1idle_count++;
+		vTaskDelay(1 / portTICK_PERIOD_MS);
+	}
+}
+
+void clearCore0Count(void*) {
 	TickType_t xLastWakeTime;
         while (true) {
             xLastWakeTime = xTaskGetTickCount();
 
-			ESP_LOGW("PERF", "CPU usage = %llu%%", 100 - coreidle_count / 5);
-			coreidle_count = 0;
+			ESP_LOGW("PERF", "Core0 usage = %llu%%", 100 - core0idle_count / 5);
+			core0idle_count = 0;
+
+            vTaskDelayUntil(&xLastWakeTime, 500 / portTICK_PERIOD_MS);
+        }
+        vTaskDelete(NULL);
+}
+
+void clearCore1Count(void*) {
+	TickType_t xLastWakeTime;
+        while (true) {
+            xLastWakeTime = xTaskGetTickCount();
+
+			ESP_LOGW("PERF", "Core1 usage = %llu%%", 100 - core1idle_count / 5);
+			core1idle_count = 0;
 
             vTaskDelayUntil(&xLastWakeTime, 500 / portTICK_PERIOD_MS);
         }
@@ -278,9 +301,11 @@ extern "C" void app_main() {
 		return;
 	}
 
-	xTaskCreate(coreIdle, "idlePerf", 2046, NULL, tskIDLE_PRIORITY, NULL);
+	xTaskCreatePinnedToCore(core0Idle, "idle0", 2046, NULL, tskIDLE_PRIORITY, NULL, 0);
+	xTaskCreatePinnedToCore(core1Idle, "idle1", 2046, NULL, tskIDLE_PRIORITY, NULL, 1);
 	vTaskDelay(10 / portTICK_PERIOD_MS);
-	xTaskCreate(clearCount, "clearCount", 4096, NULL, 5, NULL);
+	xTaskCreatePinnedToCore(clearCore0Count, "clearCore0Count", 4096, NULL, 5, NULL, 0);
+	xTaskCreatePinnedToCore(clearCore1Count, "clearCore1Count", 4096, NULL, 5, NULL, 1);
 
 	// create mutexes
 	lora_mutex = xSemaphoreCreateMutex();
